@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>외과 병원 검색</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="header">
+    <div class="logo">WellnessMate</div>
+    <nav class="nav">
+        <a href="/" class="nav-link">홈</a>
+        <a href="#" class="nav-link">서비스</a>
+        <a href="#" class="nav-link">문의</a>
+    </nav>
+    <div class="login-area">
+        <a href="/login" class="btn-login">로그인</a>
+    </div>
+</header>
+
+<main>
+    <!-- 주소 입력 폼 -->
+    <div class="search-area">
+        <form action="/surgery" method="get">
+            <label for="location">주소를 입력하세요:</label>
+            <input type="text" id="location" name="location" placeholder="예: 서울 강남구" required>
+            <button type="submit">검색</button>
+        </form>
+    </div>
+
+    <!-- 검색된 병원 리스트 출력 -->
+    <div class="clinic-list">
+        <h2 th:if="${location}" th:text="'검색 위치: ' + ${location}"></h2>
+
+        <p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+        <div th:if="${clinics}" th:each="clinic : ${clinics}" class="clinic-card">
+            <h3 th:text="${clinic.name}">병원이름</h3>
+            <p th:text="'주소: ' + ${clinic.address}">주소</p>
+            <p th:text="'연락처: ' + ${clinic.phone}">연락처</p>
+        </div>
+
+        <p th:if="${clinics == null or #lists.isEmpty(clinics)}">근처 병원 정보가 없습니다.</p>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>© 2025 LifeCare. All rights reserved.</p>
+</footer>
+</body>
+</html>
