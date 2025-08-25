@@ -9,15 +9,18 @@
 <header class="header">
     <div class="logo">WellnessMate</div>
     <nav class="nav">
-        <a href="/main/mainpage" class="nav-link">홈</a>
+        <a href="/main" class="nav-link">홈</a>
         <a href="" class="nav-link">서비스</a>
         <a href="" class="nav-link">문의</a>
     </nav>
     <div class="login-area">
-        <a href="" class="btn-login">로그인</a>
+        <a th:if="${session.loginUser == null}" href="/loginMain" class="btn-login">로그인</a>
+        <span th:if="${session.loginUser != null}">
+            <span th:text="${session.loginUser.userId}" style="font-weight: bold;"></span>님 환영합니다!
+            <a href="/logout" class="btn-login">로그아웃</a>
+        </span>
     </div>
 </header>
-
 <main>
     <!-- Hero 영역 -->
     <section class="hero">
