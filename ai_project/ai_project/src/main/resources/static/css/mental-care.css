@@ -1,0 +1,150 @@
+:root{
+      --mc-bg:#f5f8ff;
+      --mc-card:#ffffff;
+      --mc-border:#e5e7eb;
+      --mc-text:#111827;
+      --mc-muted:#6b7280;
+      --mc-blue:#2563eb;
+      --mc-blue-600:#2563eb;
+      --mc-blue-700:#1d4ed8;
+      --mc-green:#10b981;
+      --mc-yellow:#f59e0b;
+      --mc-orange:#f97316;
+      --mc-red:#ef4444;
+      --mc-radius:12px;
+      --mc-shadow:0 10px 20px rgba(0,0,0,0.06);
+    }
+
+    body{ background:#fff; }
+
+    .mc-container{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 16px;
+    }
+
+    /* Hero 이미지 */
+    .mc-hero{
+      position: relative;
+      height: 260px;
+      border-radius: var(--mc-radius);
+      overflow: hidden;
+      box-shadow: var(--mc-shadow);
+      margin-top: 24px;
+      background: #eef3ff;
+    }
+    .mc-hero img{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    .mc-hero::after{
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(13,36,89,0.55), rgba(37,99,235,0.35));
+    }
+    .mc-hero__inner{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; padding:0 24px;
+    }
+    .mc-hero__icon{
+      width:72px; height:72px; border-radius:50%; background: rgba(255,255,255,0.2);
+      display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto; backdrop-filter: blur(2px);
+      font-size: 34px;
+    }
+    .mc-hero__title{ font-size: 28px; margin: 0 0 8px 0; }
+    .mc-hero__desc{ font-size: 16px; opacity:.95; }
+
+    /* 탭 */
+    .mc-tabs{ margin-top:24px; }
+    .mc-tablist{
+      display:grid; grid-template-columns: repeat(3,1fr);
+      gap:8px; background:#f3f4f6; border-radius:10px; padding:6px;
+    }
+    .mc-tab{
+      background: transparent; border:none; padding:12px; border-radius:8px;
+      cursor:pointer; font-weight:600; color:#374151;
+    }
+    .mc-tab[aria-selected="true"]{ background:#fff; color: var(--mc-blue); box-shadow: var(--mc-shadow); }
+    .mc-tabpanel{ display:none; margin-top:16px; }
+    .mc-tabpanel.is-active{ display:block; }
+
+    /* 카드/공통 */
+    .mc-card{ background:var(--mc-card); border:1px solid var(--mc-border); border-radius: var(--mc-radius); box-shadow: var(--mc-shadow); }
+    .mc-card--p4{ padding:16px; }
+    .mc-card--p6{ padding:24px; }
+    .mc-title{ color:var(--mc-text); margin:0 0 12px 0; }
+    .mc-muted{ color:var(--mc-muted); }
+
+    /* 버튼 */
+    .mc-btn{
+      appearance:none; border:none; border-radius:10px; cursor:pointer; padding:10px 14px; font-weight:600;
+      transition: .2s ease; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .mc-btn--primary{ background: var(--mc-blue-600); color:#fff; }
+    .mc-btn--primary:hover{ background: var(--mc-blue-700); }
+    .mc-btn--outline{ background:#fff; border:1px solid #c7d2fe; color: var(--mc-blue-600); }
+    .mc-btn--outline:hover{ background:#eef2ff; }
+    .mc-btn--danger{ background: var(--mc-red); color:#fff; }
+    .mc-btn[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    /* 입력/라디오 */
+    .mc-input{ width:100%; padding:10px 12px; border:1px solid var(--mc-border); border-radius:10px; }
+    .mc-radio-row{ display:flex; align-items:flex-start; gap:10px; padding:10px; border-radius:8px; }
+    .mc-radio-row:hover{ background:#f9fafb; }
+
+    /* 스크롤 영역 */
+    .mc-scroll{ height: 360px; overflow: auto; padding-right: 6px; }
+    .mc-scroll::-webkit-scrollbar{ width:8px; }
+    .mc-scroll::-webkit-scrollbar-thumb{ background:#d1d5db; border-radius:8px; }
+
+    /* 채팅 */
+    .mc-chat{ display:flex; flex-direction:column; height:600px; }
+    .mc-chat__head{ padding:16px; border-bottom:1px solid var(--mc-border); background:#f8fbff; border-top-left-radius: var(--mc-radius); border-top-right-radius: var(--mc-radius); }
+    .mc-chat__list{ flex:1; padding:16px; overflow:auto; }
+    .mc-chat__row{ display:flex; margin-bottom:12px; }
+    .mc-chat__bubble{ max-width:80%; border-radius:10px; padding:10px 12px; font-size:14px; white-space:pre-wrap; }
+    .mc-chat__bubble--bot{ background:#f3f4f6; color:#111827; }
+    .mc-chat__bubble--user{ background: var(--mc-blue-600); color:#fff; margin-left:auto; }
+    .mc-chat__time{ font-size:11px; opacity:.75; margin-top:4px; }
+    .mc-chat__suggest{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .mc-typing{ display:flex; gap:4px; align-items:center; }
+    .mc-typing i{ width:8px; height:8px; background:#9ca3af; border-radius:50%; display:inline-block; animation:mc-bounce 1s infinite; }
+    .mc-typing i:nth-child(2){ animation-delay:.15s; }
+    .mc-typing i:nth-child(3){ animation-delay:.3s; }
+    @keyframes mc-bounce{
+      0%,80%,100%{ transform: translateY(0); opacity:.8;}
+      40%{ transform: translateY(-4px); opacity:1;}
+    }
+    .mc-chat__input{ padding:16px; border-top:1px solid var(--mc-border); display:flex; gap:8px; }
+
+    /* 그리드 */
+    .mc-grid{ display:grid; gap:24px; }
+    @media(min-width:1024px){
+      .mc-grid--2-1{ grid-template-columns: 2fr 1fr; }
+      .mc-grid--1-1{ grid-template-columns: 1fr 1fr; }
+    }
+
+    /* 진행률바 */
+    .mc-progress{ height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; }
+    .mc-progress__bar{ height:100%; background: var(--mc-blue-600); width:0%; transition: width .25s ease; }
+
+    /* 배지 */
+    .mc-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:600; }
+    .mc-badge--muted{ background:#eef2ff; color:#1d4ed8; }
+    .mc-badge--red{ background:#fee2e2; color:#b91c1c; }
+    .mc-badge--orange{ background:#ffedd5; color:#9a3412; }
+    .mc-badge--green{ background:#dcfce7; color:#166534; }
+    .mc-badge--blue{ background:#dbeafe; color:#1e40af; }
+    .mc-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+    /* 맵 플레이스홀더 */
+    .mc-map{ height:320px; background:#f3f4f6; position:relative; }
+    .mc-map__pin{ position:absolute; width:14px; height:14px; background:#3b82f6; border:2px solid #fff; border-radius:50%; box-shadow: var(--mc-shadow); }
+
+    /* 리스트 카드 */
+    .mc-hosp{ border:1px solid var(--mc-border); border-radius:10px; padding:12px; }
+    .mc-hosp:hover{ box-shadow: var(--mc-shadow); }
+
+    /* 컬러칩 */
+    .bg-green{ background: var(--mc-green); }
+    .bg-yellow{ background: var(--mc-yellow); }
+    .bg-orange{ background: var(--mc-orange); }
+    .bg-red{ background: var(--mc-red); }

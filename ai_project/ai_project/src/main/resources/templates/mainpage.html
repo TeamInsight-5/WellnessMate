@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>WellnessMate</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <style>
+
+        /* ───────── 메인 슬라이더 (퍼센트 기반 / 비율 안정) ───────── */
+        #main { width: 100% !important; }
+
+        /* 위 여백 */
+        #sliderType01 { margin-top: clamp(16px, 2.5vw, 32px); }
+
+        .main-slider__wrap {
+          width: 90%; max-width: 100%;
+          margin: 0 auto;
+        }
+        @media (max-width: 768px) { .main-slider__wrap { width: 95%; } }
+
+        /* 배경은 밝은 그라데이션, 고정 비율 16:9 */
+        .main-slider__img {
+          position: relative;
+          aspect-ratio: 16 / 6;
+          overflow: hidden;
+          border-radius: 12px;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+          background: linear-gradient(135deg, #eaf4ff, #f6f9ff);
+        }
+
+        .main-slider__inner {
+          display: flex;
+          transition: transform 0.5s ease;
+          will-change: transform;
+          height: 100%;
+        }
+        .main-slider__slide { flex: 0 0 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+        /* 이미지 확대/크롭 방지 → contain */
+        .main-slider__slide img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
+          background: transparent;
+        }
+
+        /* 1번 슬라이드: 이미지 + 오버레이 + 텍스트(배경이미지 대신 <img>) */
+        .hero-slide { position: relative; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+        .hero-slide__img { position:absolute; inset:0; width:100%; height:100%; object-fit: contain; }
+        .hero-slide::before {
+          content:""; position:absolute; inset:0;
+          /* 가독성 위한 아주 은은한 블루 오버레이 */
+          background: linear-gradient(0deg, rgba(0, 90, 156, 0.25), rgba(0, 90, 156, 0.25));
+        }
+        .hero-slide__content { position: relative; z-index: 1; color: #fff; text-align: center; padding: 2% 4%; }
+        .hero-slide__title { font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 700; margin: 0 0 1rem 0; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+        .hero-slide__title .highlight { color: #66b3ff; }
+        .hero-slide__desc  { font-size: clamp(0.95rem, 1.6vw, 1.1rem); line-height: 1.6; max-width: 900px; margin: 0 auto; color: #f5fbff; }
+
+        /* ───────── 좌우 버튼: 각자 절대 위치(완전 대칭) ───────── */
+        .main-slider__btn {
+          position: absolute; top: 50%;
+          width: 44px; height: 44px;
+          transform: translateY(-50%);
+          background: rgba(0,0,0,0.45);
+          color: #fff; border: none; border-radius: 50%;
+          cursor: pointer; font-size: 20px; line-height: 44px;
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10;
+        }
+        .main-slider__btn:hover { background: rgba(0,0,0,0.55); }
+        .main-slider__btn--prev { left: 12px; }
+        .main-slider__btn--next { right: 12px; }
+
+        /* ───────── 닷 버튼 ───────── */
+        .main-slider__dot {
+          position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+          display: flex; gap: 0.5rem; z-index: 10;
+        }
+        .main-slider__dot .dot {
+          width: 10px; height: 10px; border-radius: 50%; background: #ddd; border: none; cursor: pointer;
+        }
+        .main-slider__dot .dot.active { background: #007bff; }
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="/main" class="nav-link"><div class="logo">WellnessMate</div></a>
+    <nav class="nav">
+        <a href="/main" class="nav-link">홈</a>
+
+        <!-- ▼ 드롭다운: 서비스 -->
+        <div class="dropdown">
+            <a href="#" class="dropdown-toggle nav-link" aria-haspopup="true" aria-expanded="false">서비스</a>
+            <div class="dropdown-menu" role="menu">
+                <a href="/mental-care" class="dropdown-link" role="menuitem">심리케어</a>
+                <a href="/hospital_med" class="dropdown-link" role="menuitem">내과</a>
+                <a href="/hospital_sur" class="dropdown-link" role="menuitem">외과</a>
+            </div>
+        </div>
+
+        <a href="/contact" class="nav-link">문의</a>
+    </nav>
+    <div class="login-area">
+        <a th:if="${session.loginUser == null}" href="/loginMain" class="btn-login">로그인</a>
+        <span th:if="${session.loginUser != null}">
+      <span th:text="${session.loginUser.userId}" style="font-weight: bold;"></span>님 환영합니다!
+      <a href="/logout" class="btn-login">로그아웃</a>
+    </span>
+    </div>
+</header>
+
+<main>
+    <!-- 슬라이더 (Hero 대체) -->
+    <section id="sliderType01">
+        <div class="main-slider__wrap">
+            <div class="main-slider__img">
+                <div class="main-slider__inner">
+                    <!-- 1) 텍스트 오버레이 슬라이드 (이미지 + 오버레이 + 텍스트) -->
+                    <div class="main-slider__slide" role="group" aria-label="1/4">
+                        <div class="hero-slide">
+                            <img class="hero-slide__img" src="/img/배너1.PNG" alt="웰니스 배너">
+                            <div class="hero-slide__content">
+                                <h1 class="hero-slide__title">
+                                    건강한 삶을 위한 <span class="highlight">WellnessMate</span>
+                                </h1>
+                                <p class="hero-slide__desc">
+                                    믿을만한 의료 서비스로 선택하세요. AI 기반 진단부터 전문의 상담까지,
+                                    언제 어디서나 필요한 모든 서비스를 제공합니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 2) 이미지 슬라이드들 (contain으로 확대 느낌 제거) -->
+                    <div class="main-slider__slide" role="group" aria-label="2/4">
+                        <a href="/lego" class="block w-full h-full" aria-label="레고 페이지로 이동">
+                            <img src="/img/배너2.PNG" alt="배너 이미지 2">
+                        </a>
+                    </div>
+                    <div class="main-slider__slide" role="group" aria-label="3/4">
+                        <a href="/lego" class="block w-full h-full" aria-label="레고 페이지로 이동">
+                            <img src="/img/배너3.PNG" alt="배너 이미지 3">
+                        </a>
+                    </div>
+                    <div class="main-slider__slide" role="group" aria-label="4/4">
+                        <a href="/todo" class="block w-full h-full" aria-label="할 일 페이지로 이동">
+                            <img src="/img/배너4.PNG" alt="배너 이미지 4">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 좌우 버튼 (완전 대칭) -->
+                <button class="main-slider__btn main-slider__btn--prev" aria-label="이전">&#10094;</button>
+                <button class="main-slider__btn main-slider__btn--next" aria-label="다음">&#10095;</button>
+
+                <!-- 닷 버튼 -->
+                <div class="main-slider__dot" aria-label="슬라이드 네비게이션"><!-- JS 생성 --></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 전문 의료 서비스: 유지 -->
+    <section class="services">
+        <h2>전문 의료 서비스</h2>
+        <p>각 분야별 전문가들이 제공하는 맞춤형 의료 상담 서비스</p>
+
+        <div class="service-grid">
+            <div class="card">
+                <div class="card-icon">💙</div>
+                <h3>심리케어</h3>
+                <p>스트레스, 우울, 불안 등 마음의 어려움을 전문가와 함께 극복해보세요. 자기관리부터 맞춤형 상담까지 단계적 케어를 제공합니다.</p>
+                <a href="/mental-care" class="btn-card">심리케어 더 알아보기</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">🩺</div>
+                <h3>내과</h3>
+                <p>내과 전문의 상담 및 진단을 통해 질병을 조기 발견하고 치료할 수 있습니다. AI 기반 진단 서비스도 지원합니다.</p>
+                <a href="/hospital_med" class="btn-card">내과 서비스 시작하기</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">🩹</div>
+                <h3>외과</h3>
+                <p>외상, 수술이 필요한 질환 등 외과 전문 진료 서비스를 제공합니다. 전문의 상담을 통해 안전하고 신속한 치료를 받아보세요.</p>
+                <a href="/hospital_sur" class="btn-card">외과 서비스 시작하기</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="site-footer__container">
+        <div class="site-footer__cols">
+            <div class="site-footer__col">
+                <h3 class="site-footer__brand">WellnessMate</h3>
+                <p class="site-footer__muted">건강한 삶의 동반자</p>
+            </div>
+
+            <div class="site-footer__col">
+                <h4 class="site-footer__title">서비스</h4>
+                <ul class="site-footer__list">
+                    <!-- 필요 시 onclick=showPage('...')로 교체 가능 -->
+                    <li><a href="/mental-care" class="site-footer__link">심리케어</a></li>
+                    <li><a href="/hospital_med" class="site-footer__link">내과</a></li>
+                    <li><a href="/hospital_sur" class="site-footer__link">외과</a></li>
+                </ul>
+            </div>
+
+            <div class="site-footer__col">
+                <h4 class="site-footer__title">연락처</h4>
+                <ul class="site-footer__list">
+                    <li class="site-footer__muted">이메일: <a href="mailto:support@wellnessmate.kr" class="site-footer__link">support@wellnessmate.kr</a></li>
+                    <li class="site-footer__muted">전화: <a href="tel:15881234" class="site-footer__link">1588-1234</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="site-footer__bottom">
+            <p class="site-footer__muted">© 2025 WellnessMate. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sliderInner = document.querySelector(".main-slider__inner");
+      const slides = document.querySelectorAll(".main-slider__slide");
+      const sliderDot = document.querySelector(".main-slider__dot");
+      const prevBtn = document.querySelector(".main-slider__btn--prev");
+      const nextBtn = document.querySelector(".main-slider__btn--next");
+      const sliderImgWrap = document.querySelector(".main-slider__img");
+
+      let currentIndex = 0;
+      const sliderCount = slides.length;
+      let autoTimer = null;
+
+      function buildDots() {
+        sliderDot.innerHTML = "";
+        for (let i = 0; i < sliderCount; i++) {
+          const dot = document.createElement("button");
+          dot.type = "button"; dot.className = "dot";
+          dot.title = `이미지 ${i + 1}`;
+          dot.setAttribute("aria-label", `이미지 ${i + 1}로 이동`);
+          dot.addEventListener("click", () => gotoSlider(i));
+          sliderDot.appendChild(dot);
+        }
+        activateDot(0);
+      }
+      function activateDot(index) {
+        Array.from(sliderDot.children).forEach(dot => dot.classList.remove("active"));
+        sliderDot.children[index]?.classList.add("active");
+      }
+      function gotoSlider(index) {
+        const width = sliderImgWrap.clientWidth;
+        sliderInner.style.transform = `translateX(-${width * index}px)`;
+        currentIndex = index; activateDot(index);
+      }
+      function onResize() { gotoSlider(currentIndex); }
+
+      function startAuto() {
+        stopAuto();
+        autoTimer = setInterval(() => {
+          const next = (currentIndex + 1) % sliderCount;
+          gotoSlider(next);
+        }, 5000);
+      }
+      function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+
+      prevBtn.addEventListener("click", () => {
+        const prev = (currentIndex - 1 + sliderCount) % sliderCount;
+        gotoSlider(prev); startAuto();
+      });
+      nextBtn.addEventListener("click", () => {
+        const next = (currentIndex + 1) % sliderCount;
+        gotoSlider(next); startAuto();
+      });
+
+      sliderImgWrap.addEventListener("mouseenter", stopAuto);
+      sliderImgWrap.addEventListener("mouseleave", startAuto);
+      window.addEventListener("resize", onResize);
+
+      buildDots(); gotoSlider(0); startAuto();
+    });
+</script>
+</body>
+</html>
