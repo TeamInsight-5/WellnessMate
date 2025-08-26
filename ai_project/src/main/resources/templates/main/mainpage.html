@@ -5,6 +5,47 @@
     <title>WellnessMate</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<style>
+    /* 배너 스타일 */
+       .outer {
+           border: 4px solid royalblue;
+           width: 600px;
+           height: 250px;
+           margin: 30px auto;
+           overflow-x: hidden;
+           border-radius: 12px;
+       }
+       .inner-list {
+           display: flex;
+           transition: .3s ease-out;
+           height: 100%;
+       }
+       .inner {
+           padding: 0;
+           flex-shrink: 0; /* 줄어들지 않게 */
+       }
+       .inner img {
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+       }
+       .button-list {
+           text-align: center;
+           margin-top: 10px;
+       }
+       .button-list button {
+           padding: 8px 16px;
+           margin: 0 5px;
+           border: none;
+           border-radius: 6px;
+           background: royalblue;
+           color: white;
+           cursor: pointer;
+       }
+       .button-list button:hover {
+           background: darkblue;
+       }
+</style>
 <body>
 <header class="header">
     <div class="logo">WellnessMate</div>
@@ -33,6 +74,21 @@
 <!--            <a href="" class="btn-primary">서비스 시작하기</a>-->
 <!--            <a href="" class="btn-secondary">더 알아보기</a>-->
 <!--        </div>-->
+    </section>
+
+    <section>
+        <div class="outer">
+            <div class="inner-list">
+                <div class="inner"><img src="/img/심리케어 이미지.jpg" alt="배너1"></div>
+                <div class="inner"><img src="/img/내과.jpg" alt="배너2"></div>
+                <div class="inner"><img src="/img/외과.jpg" alt="배너3"></div>
+            </div>
+        </div>
+
+        <div class="button-list">
+            <button class="button-left">←</button>
+            <button class="button-right">→</button>
+        </div>
     </section>
 
     <!-- 전문 의료 서비스 -->
@@ -81,5 +137,47 @@
 <footer class="footer">
     <p>© 2025 LifeCare. All rights reserved.</p>
 </footer>
+
+<script>
+    const outer = document.querySelector('.outer');
+    const innerList = document.querySelector('.inner-list');
+    const inners = document.querySelectorAll('.inner');
+    let currentIndex = 0;
+
+    inners.forEach((inner) => {
+        inner.style.width = `${outer.clientWidth}px`;
+    });
+
+    innerList.style.width = `${outer.clientWidth * inners.length}px`;
+
+    const buttonLeft = document.querySelector('.button-left');
+    const buttonRight = document.querySelector('.button-right');
+
+    buttonLeft.addEventListener('click', () => {
+        currentIndex--;
+        currentIndex = currentIndex < 0 ? 0 : currentIndex;
+        innerList.style.marginLeft = `-${outer.clientWidth * currentIndex}px`;
+        clearInterval(interval);
+        interval = getInterval();
+    });
+
+    buttonRight.addEventListener('click', () => {
+        currentIndex++;
+        currentIndex = currentIndex >= inners.length ? inners.length - 1 : currentIndex;
+        innerList.style.marginLeft = `-${outer.clientWidth * currentIndex}px`;
+        clearInterval(interval);
+        interval = getInterval();
+    });
+
+    const getInterval = () => {
+        return setInterval(() => {
+            currentIndex++;
+            currentIndex = currentIndex >= inners.length ? 0 : currentIndex;
+            innerList.style.marginLeft = `-${outer.clientWidth * currentIndex}px`;
+        }, 3000);
+    }
+
+    let interval = getInterval();
+</script>
 </body>
 </html>
