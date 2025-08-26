@@ -1,44 +1,28 @@
 package com.example.ai_project.main.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.example.ai_project.main.dto.SurveyData;
+import com.example.ai_project.main.service.DiagnosisService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
-
-@Controller
+@RestController // API 전용 컨트롤러
+@RequestMapping("/internal-medicine")
 public class InternalMedicineController {
 
-    @GetMapping("/internalmedicine")
-    public String showInternalMedicinePage() {
-        return "internalmedicine"; // internalmedicine.html을 렌더링
+    private final DiagnosisService diagnosisService;
+
+    public InternalMedicineController(DiagnosisService diagnosisService) {
+        this.diagnosisService = diagnosisService;
     }
 
-    // 증상 진단 요청을 처리할 API 엔드포인트
-    @PostMapping("/api/diagnose_symptoms")
-    @ResponseBody
-    public Map<String, Object> diagnoseSymptoms(@RequestBody Map<String, List<String>> request) {
-        List<String> symptoms = request.get("symptoms");
+    // ⚠️ GET 메서드 삭제 또는 분리
 
-        // TODO: MED-002, MED-003 기능 구현
-        // 1. symptoms(선택한 증상)를 기반으로 질환 후보를 찾습니다.
-        // 2. 질환 후보에 대한 진료과, 응급도를 결정합니다.
-
-        // 현재는 예시 데이터 반환
-        return Map.of(
-                //임시 삭제예정)
-                "riskScore", 9,
-                "riskMessage", "의료진 상담이 필요한 상태입니다.",
-                "recommendedDepartments", List.of("내분비내과", "일반내과"),
-                "expectedDisease", Map.of(
-                        "name", "당뇨병",
-                        "urgency", "경고",
-                        "relatedSymptoms", List.of("빈뇨", "갈증", "피로감"),
-                        "recommendedDepartment", "내분비내과"
-                )
-        );
+    @PostMapping("/diagnose")
+    public ResponseEntity<String> diagnoseSymptoms(@RequestBody SurveyData surveyData) {
+        String aiResponse = diagnosisService.getAiDiagnosis(surveyData);
+        return ResponseEntity.ok(aiResponse);
     }
 }

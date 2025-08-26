@@ -3,6 +3,11 @@ function goToMainPage() {
     window.location.href = '/main'; // 메인 페이지의 URL로 이동합니다.
 }
 
+// 설문을 처음부터 다시 시작하는 함수
+function restartSurvey() {
+    location.reload(); // 페이지를 새로고침하여 설문을 재시작합니다.
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     let currentStep = 1;
     const totalSteps = 4;
@@ -56,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultTitle.textContent = data.expectedDisease.name;
         urgencyBadge.textContent = data.expectedDisease.urgency;
+        urgencyBadge.className = `urgency-badge ${data.expectedDisease.urgency}`;
 
         riskProgress.style.width = `${data.riskScore / 20 * 100}%`;
         riskScore.textContent = `${data.riskScore}/20`;
@@ -73,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         diseaseCard.innerHTML = `
             <div class="disease-header">
                 <h3>${data.expectedDisease.name}</h3>
-                <span class="urgency-badge">${data.expectedDisease.urgency}</span>
+                <span class="urgency-badge ${data.expectedDisease.urgency}">${data.expectedDisease.urgency}</span>
             </div>
             <p><strong>주요 증상:</strong> ${data.expectedDisease.relatedSymptoms.join(', ')}</p>
             <p><strong>추천 진료과:</strong> ${data.expectedDisease.recommendedDepartment}</p>
@@ -112,28 +118,74 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentStep > 1) {
                 currentStep--;
                 updateUI();
+            } else {
+                goToMainPage();
             }
         } else if (e.target.classList.contains('btn-submit')) {
             const checkedHistory = Array.from(document.querySelectorAll('#historyForm input:checked')).map(el => el.value);
             surveyData.history = checkedHistory;
 
-            const dummyResult = {
-                riskScore: 9,
-                riskMessage: "의료진 상담이 필요한 상태입니다.",
-                recommendedDepartments: ["내분비내과", "일반내과"],
-                expectedDisease: {
-                    name: "당뇨병",
-                    urgency: "경고",
-                    relatedSymptoms: ["빈뇨", "갈증", "피로감"],
-                    recommendedDepartment: "내분비내과"
-                }
-            };
-
-            renderResult(dummyResult);
+            const resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> AI가 진단 중입니다...</h2>';
             currentStep = totalSteps + 1;
             updateUI();
 
-            displayNearbyHospitals();
+            fetch('/internal-medicine/diagnose', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(surveyData),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('서버 응답에 문제가 있습니다. 상태 코드: ' + response.status);
+                }
+                return response.json(); // ⚠️ response.json() 사용
+            })
+            .then(aiResult => {
+                resultContainer.innerHTML = `
+                    <h2>건강상태 진단 결과</h2>
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3 id="resultTitle"></h3>
+                            <span class="urgency-badge" id="urgencyBadge"></span>
+                        </div>
+                        <div class="risk-score">
+                            <p>위험도 점수</p>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" id="riskProgress"></div>
+                            </div>
+                            <span id="riskScore"></span>
+                        </div>
+                        <p id="resultMessage"></p>
+                    </div>
+                    <div class="recommendation-section">
+                        <h4>추천 진료과</h4>
+                        <div id="recommendedDepartments"></div>
+                    </div>
+                    <div class="expected-disease">
+                        <h4>예상 질환명</h4>
+                        <div id="expectedDisease"></div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn-primary" onclick="restartSurvey()">다시 진단하기</button>
+                        <button type="button" class="btn-secondary" onclick="goToMainPage()">메인으로 돌아가기</button>
+                    </div>
+                `;
+
+                renderResult(aiResult);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultContainer.innerHTML = `
+                    <h2>진단 중 오류 발생</h2>
+                    <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                    <div class="button-group">
+                        <button type="button" class="btn-primary" onclick="restartSurvey()">다시 진단하기</button>
+                    </div>
+                `;
+            });
         }
     });
 
@@ -160,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
             navigator.geolocation.getCurrentPosition(position => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
-
                 const userLocation = new kakao.maps.LatLng(userLat, userLng);
 
                 const mapOption = {
@@ -177,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         data.forEach(place => {
                             const placePosition = new kakao.maps.LatLng(place.y, place.x);
-
                             const marker = new kakao.maps.Marker({
                                 map: map,
                                 position: placePosition
@@ -197,9 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             hospitalListContainer.appendChild(hospitalDiv);
                             bounds.extend(placePosition);
                         });
-
                         map.setBounds(bounds);
-
                     } else {
                         hospitalListContainer.innerHTML = '<p>주변 병원 정보를 찾을 수 없습니다.</p>';
                     }
@@ -219,5 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    displayNearbyHospitals();
     updateUI();
 });

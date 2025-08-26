@@ -1,18 +1,64 @@
-/* 컨테이너 및 섹션 레이아웃 */
-.survey-container {
-    max-width: 1000px;
-    margin: 40px auto;
+/* ---------------- 기본 레이아웃 ---------------- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    color: #333;
+}
+
+.main-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
     padding: 20px;
+}
+
+/* ---------------- 헤더 ---------------- */
+.internal-medicine-header {
+    background: linear-gradient(to right, #4CAF50, #66BB6A);
+    color: white;
+    padding: 60px 40px;
+    text-align: center;
+    border-radius: 15px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.internal-medicine-header h1 {
+    margin: 10px 0;
+    font-size: 2rem;
+}
+
+.internal-medicine-header p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.header-icon {
+    font-size: 2.5rem;
+    display: block;
+}
+
+/* ---------------- 컨텐츠 영역 ---------------- */
+.content-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.survey-container, .health-tips-section {
+    flex: 1;
     background-color: #fff;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid #4CAF50;
+    min-width: 300px;
 }
 
-.question-box {
-    margin-top: 30px;
-}
-
-/* 진행률 바 */
+/* ---------------- 진행률 바 ---------------- */
 .progress-bar-container {
     display: flex;
     align-items: center;
@@ -39,7 +85,7 @@
     color: #666;
 }
 
-/* 폼 요소 스타일 (체크박스, 라디오 버튼) */
+/* ---------------- 질문 폼 ---------------- */
 h2 {
     font-size: 1.5rem;
     margin-bottom: 20px;
@@ -50,12 +96,15 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    max-height: 250px; /* 4개 항목에 맞는 높이로 설정 */
+    overflow-y: scroll; /* 내용이 넘칠 경우 세로 스크롤바 생성 */
+    padding-right: 15px; /* 스크롤바와 내용 사이 여백 */
 }
 
 .checkbox-group label, .radio-group label {
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     cursor: pointer;
@@ -68,19 +117,21 @@ h2 {
 }
 
 input[type="checkbox"], input[type="radio"] {
-    margin-right: 15px;
+    margin-right: 12px;
     accent-color: #4CAF50;
     transform: scale(1.2);
 }
 
-/* 버튼 스타일 */
+/* ---------------- 버튼 ---------------- */
 .button-group {
     display: flex;
     justify-content: space-between;
     margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.btn-prev, .btn-next, .btn-submit {
+.btn-prev, .btn-next, .btn-submit, .btn-primary, .btn-secondary {
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
@@ -89,25 +140,32 @@ input[type="checkbox"], input[type="radio"] {
     transition: background-color 0.3s, color 0.3s;
 }
 
-.btn-prev {
+.btn-prev, .btn-secondary {
     background-color: #f1f1f1;
     color: #555;
+    border: 1px solid #ddd;
 }
 
-.btn-prev:hover {
+.btn-prev:hover, .btn-secondary:hover {
     background-color: #e0e0e0;
 }
 
-.btn-next, .btn-submit {
+.btn-next, .btn-submit, .btn-primary {
     background-color: #4CAF50;
     color: white;
 }
 
-.btn-next:hover, .btn-submit:hover {
+.btn-next:hover, .btn-submit:hover, .btn-primary:hover {
     background-color: #45a049;
 }
 
-/* 진단 결과 화면 스타일 */
+/* ---------------- 결과 화면 ---------------- */
+#result {
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
 .result-card {
     border: 1px solid #eee;
     padding: 20px;
@@ -178,9 +236,34 @@ input[type="checkbox"], input[type="radio"] {
     padding: 15px;
 }
 
+/* ---------------- 건강 팁 ---------------- */
+.health-tips-section .health-tip {
+    margin-bottom: 20px;
+}
+
+.health-tips-section h4 {
+    color: #4CAF50;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.health-tips-section .tip-icon {
+    font-size: 1.5rem;
+}
+
+.health-tips-section p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin-top: 5px;
+}
+
+/* ---------------- 지도 ---------------- */
 #map-container {
     width: 100%;
-    height: 400px;
+    height: 350px;
     background-color: #e9e9e9;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -190,20 +273,49 @@ input[type="checkbox"], input[type="radio"] {
     color: #888;
 }
 
-/* 병원 리스트 그리드 컨테이너 */
-.hospital-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+/* ---------------- 병원 리스트 ---------------- */
+.nearby-hospital-section {
+    margin-top: 40px; /* 설문과 병원 찾기 간격 확보 */
+    background-color: #fff;
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
-/* 개별 병원 카드 스타일 */
+.nearby-hospital-header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 20px;
+    margin: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nearby-hospital-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.hospital-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    padding: 0 20px;
+    overflow-y: scroll;
+    max-height: 400px;
+}
+
 .hospital-item {
     background-color: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
@@ -217,19 +329,17 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .hospital-item strong {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #333;
     margin-bottom: 5px;
 }
 
-/* 세부 정보 (주소, 평점) */
 .hospital-item .details {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
     margin: 5px 0;
 }
 
-/* 전화걸기 아이콘 */
 .hospital-item .contact-info {
     display: flex;
     align-items: center;
@@ -237,31 +347,24 @@ input[type="checkbox"], input[type="radio"] {
     margin: 5px 0;
 }
 
-/* 버튼 그룹 */
 .hospital-item .buttons {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-/* 버튼 스타일 */
 .hospital-item .btn-directions,
-.hospital-item .btn-call,
 .hospital-item .btn-detail {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.hospital-item .btn-directions,
-.hospital-item .btn-detail {
     background-color: #4CAF50;
     color: white;
     border: none;
+    transition: background-color 0.2s;
 }
 
 .hospital-item .btn-directions:hover,
@@ -273,6 +376,11 @@ input[type="checkbox"], input[type="radio"] {
     background-color: #f1f1f1;
     color: #333;
     border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+    transition: background-color 0.2s;
 }
 
 .hospital-item .btn-call:hover {

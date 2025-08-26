@@ -8,7 +8,7 @@ public class lifecareController {
 
     @GetMapping("/main" )
     public String mainpage(){
-        return "mainpage";
+        return "main/mainpage";
     }
 
 }
