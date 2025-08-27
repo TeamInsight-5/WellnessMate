@@ -1,4 +1,4 @@
-package com.example.ai_project.memberManager;
+package com.example.ai_project.main.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

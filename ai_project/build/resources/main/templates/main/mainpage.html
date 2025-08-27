@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>WellnessMate</title>
@@ -55,9 +57,9 @@
         <a href="" class="nav-link">문의</a>
     </nav>
     <div class="login-area">
-        <a th:if="${session.loginUser == null}" href="/loginMain" class="btn-login">로그인</a>
-        <span th:if="${session.loginUser != null}">
-            <span th:text="${session.loginUser.userId}" style="font-weight: bold;"></span>님 환영합니다!
+        <a th:if="${#authorization.expression('!isAuthenticated()')}" href="/loginMain" class="btn-login">로그인</a>
+        <span th:if="${#authorization.expression('isAuthenticated()')}">
+            <span th:text="${#authentication.principal.username}" style="font-weight: bold;"></span>님 환영합니다!
             <a href="/logout" class="btn-login">로그아웃</a>
         </span>
     </div>
