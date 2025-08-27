@@ -1,24 +1,17 @@
-// 메인 페이지로 이동하는 함수
-function goToMainPage() {
-    window.location.href = '/main'; // 실제 메인 페이지 URL로 변경
-}
-
-// 설문을 처음부터 다시 시작하는 함수
-function restartSurvey() {
-    window.location.reload();
-}
-
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- 상태 변수 및 상수 정의 ---
     let currentStep = 1;
-    const totalSteps = 5; // 총 설문 단계 수
+    const totalSteps = 5;
     const surveyData = {
         injuries: [],
+        imageFile: null,
         bleeding: null,
         pain: null,
         status: []
     };
 
-    // 각 단계의 HTML 요소를 객체에 저장
+    // --- 주요 DOM 요소 선택 ---
     const steps = {
         1: document.getElementById('step1'),
         2: document.getElementById('step2'),
@@ -27,166 +20,180 @@ document.addEventListener('DOMContentLoaded', () => {
         5: document.getElementById('step5'),
         result: document.getElementById('result')
     };
-
-    // 오른쪽 가이드 요소
-    const guideDefault = document.getElementById('guide-default');
-    const guideStep2 = document.getElementById('guide-step2');
-
+    const guides = {
+        default: document.getElementById('guide-default'),
+        step2: document.getElementById('guide-step2'),
+        result: document.getElementById('guide-result')
+    };
     const progressBar = document.querySelector('.progress');
     const stepText = document.querySelector('.step-text');
     const surveyContainer = document.querySelector('.survey-container');
+    const fileInput = document.getElementById('file-upload-input');
+    const dragDropArea = document.getElementById('drag-drop-area');
 
-    // UI를 현재 단계에 맞게 업데이트하는 함수
+    // --- 함수 정의 ---
+    const goToMainPage = () => window.location.href = '/main';
+    const restartSurvey = () => window.location.reload();
+
     const updateUI = () => {
-        Object.values(steps).forEach(step => {
-            if (step) step.style.display = 'none';
-        });
-        if (guideDefault) guideDefault.style.display = 'none';
-        if (guideStep2) guideStep2.style.display = 'none';
+        Object.values(steps).forEach(step => step && (step.style.display = 'none'));
+        Object.values(guides).forEach(guide => guide && (guide.style.display = 'none'));
 
-        if (currentStep <= totalSteps) {
-            if (steps[currentStep]) steps[currentStep].style.display = 'block';
-
-            if (currentStep === 2 && guideStep2) {
-                guideStep2.style.display = 'block';
-            } else if (guideDefault) {
-                guideDefault.style.display = 'block';
+        const activeStepElement = steps[currentStep];
+        if (currentStep <= totalSteps && activeStepElement) {
+            activeStepElement.style.display = 'flex';
+            if (currentStep === 2) {
+                guides.step2.style.display = 'block';
+            } else {
+                guides.default.style.display = 'block';
             }
 
-            const progress = (currentStep / totalSteps) * 100;
-            if(progressBar) progressBar.style.width = `${progress}%`;
-            if(stepText) stepText.textContent = `${currentStep}/${totalSteps}`;
-        } else {
-            if (steps.result) steps.result.style.display = 'block';
-            if (guideDefault) guideDefault.style.display = 'block';
+            const progressPercentage = (currentStep / totalSteps) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            stepText.textContent = `${currentStep}/${totalSteps}`;
 
-            if(progressBar) progressBar.style.width = '100%';
-            if(stepText) stepText.textContent = '결과';
+            const prevBtn = activeStepElement.querySelector('.btn-prev');
+            if(prevBtn) prevBtn.disabled = (currentStep === 1);
+
+        } else if(steps.result) {
+            steps.result.style.display = 'block';
+            guides.result.style.display = 'block';
+            progressBar.style.width = '100%';
+            stepText.textContent = '결과';
         }
     };
 
-    // 결과 데이터를 화면에 렌더링하는 함수
+    const validateStep = (step) => {
+        const stepElement = steps[step];
+        if(!stepElement) return false;
+
+        if (step === 1) {
+            const checked = Array.from(stepElement.querySelectorAll('input:checked'));
+            if (checked.length === 0) {
+                alert('외상 종류를 1개 이상 선택해주세요.');
+                return false;
+            }
+            surveyData.injuries = checked.map(el => el.value);
+        } else if (step === 2) {
+            if (!surveyData.imageFile) {
+                alert('상처 부위 사진을 등록해주세요.');
+                return false;
+            }
+        } else if (step === 3) {
+            const checked = stepElement.querySelector('input:checked');
+            if (!checked) {
+                alert('출혈 정도를 선택해주세요.');
+                return false;
+            }
+            surveyData.bleeding = checked.value;
+        } else if (step === 4) {
+            const checked = stepElement.querySelector('input:checked');
+            if (!checked) {
+                alert('통증 및 움직임 정도를 선택해주세요.');
+                return false;
+            }
+            surveyData.pain = checked.value;
+        } else if (step === 5) {
+             const checked = Array.from(stepElement.querySelectorAll('input:checked'));
+            if (checked.length === 0) {
+                alert('현재 상태를 1개 이상 선택해주세요.');
+                return false;
+            }
+            surveyData.status = checked.map(el => el.value);
+        }
+        return true;
+    };
+
     const renderResult = (data) => {
-        const riskLevel = document.getElementById('riskLevel');
-        const scoreValue = document.getElementById('scoreValue');
-        const scoreProgress = document.getElementById('scoreProgress');
-        const emergencyMessage = document.getElementById('emergencyMessage');
-        const emergencyGuide = document.getElementById('emergencyGuide');
-        const detailResultList = document.getElementById('detailResultList');
-        const recommendedDepartments = document.getElementById('recommendedDepartments');
-
-        if(riskLevel) riskLevel.textContent = data.riskLevel;
-        if(scoreValue) scoreValue.textContent = `${data.riskScore}/${data.maxScore}`;
-        if(scoreProgress) scoreProgress.style.width = `${(data.riskScore / data.maxScore) * 100}%`;
-        if(emergencyMessage) emergencyMessage.textContent = data.emergencyMessage;
-        if(emergencyGuide) emergencyGuide.textContent = data.emergencyGuide;
-
-        if(detailResultList) {
-            detailResultList.innerHTML = '';
-            data.detailedResults.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'result-item card';
-                div.innerHTML = `<h4>${item.question}</h4><p><strong>답변:</strong> ${item.answer}</p><p><strong>위험 기여도:</strong> ${item.riskScore}</p>`;
-                detailResultList.appendChild(div);
-            });
+        const resultContainer = steps.result;
+        // AI 응답에 맞게 위험도 색상 결정
+        let riskColor = '#f0ad4e'; // 주의(보통)
+        if (data.risk.includes('높음') || data.risk.includes('매우 높음')) {
+            riskColor = '#d9534f';
+        } else if (data.risk.includes('낮음')) {
+            riskColor = '#5cb85c';
         }
 
-        if(recommendedDepartments) {
-            recommendedDepartments.innerHTML = '';
-            data.recommendedDepartments.forEach((dept, index) => {
-                const div = document.createElement('div');
-                div.className = 'department-item card';
-                div.innerHTML = `<p><strong>${index + 1}순위: ${dept.name}</strong></p><small>${dept.description}</small>`;
-                recommendedDepartments.appendChild(div);
-            });
-        }
+        resultContainer.innerHTML = `
+            <h2>AI 분석 결과</h2>
+            <div class="result-card" style="border-color: ${riskColor}; padding: 20px; border-radius: 10px; text-align: left;">
+                <h3 style="text-align: center; margin-top: 0;">${data.name}</h3>
+                <p><strong>🚨 위험도:</strong> <span style="color: ${riskColor}; font-weight: bold;">${data.risk}</span></p>
+                <p><strong>🩹 응급처치 가이드:</strong></p>
+                <p style="background-color: #f9f9f9; padding: 10px; border-radius: 5px;">${data.first_aid}</p>
+            </div>
+            <div class="recommendation-section" style="margin-top: 20px; text-align: left;">
+                <h4 style="margin-top: 0;">안내</h4>
+                <div class="department-item" style="border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                    <p style="margin: 0;"><strong>전문의 상담 필요</strong></p>
+                    <small style="color: var(--text-light);">AI 분석은 참고용이며, 정확한 진단과 치료는 반드시 병원을 방문하여 전문의와 상담하세요.</small>
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn-primary" id="restart-button">다시 진단하기</button>
+                <button type="button" class="btn-secondary" id="main-page-button">메인으로 돌아가기</button>
+            </div>
+        `;
+        document.getElementById('restart-button').addEventListener('click', restartSurvey);
+        document.getElementById('main-page-button').addEventListener('click', goToMainPage);
     };
 
-    // 버튼 클릭 이벤트 처리
-    if (surveyContainer) {
-        surveyContainer.addEventListener('click', (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
+    // ⭐️ 실제 서버 통신을 하도록 수정한 함수
+    const submitSurvey = () => {
+        if (!surveyData.imageFile) {
+            alert('상처 부위 사진을 등록해주세요.');
+            return;
+        }
 
-            let canProceed = true;
-            if (target.classList.contains('btn-next') || target.classList.contains('btn-skip')) {
-                if (currentStep === 1) {
-                    const checked = Array.from(document.querySelectorAll('#step1 input:checked'));
-                    if (checked.length === 0) {
-                        alert('외상 종류를 1개 이상 선택해주세요.');
-                        canProceed = false;
-                    } else {
-                        surveyData.injuries = checked.map(el => el.value);
-                    }
-                } else if (currentStep === 3) {
-                    const checked = document.querySelector('#step3 input:checked');
-                    if (!checked) {
-                        alert('출혈 정도를 선택해주세요.');
-                        canProceed = false;
-                    } else {
-                        surveyData.bleeding = checked.value;
-                    }
-                } else if (currentStep === 4) {
-                    const checked = document.querySelector('#step4 input:checked');
-                    if (!checked) {
-                        alert('통증 및 움직임 정도를 선택해주세요.');
-                        canProceed = false;
-                    } else {
-                        surveyData.pain = checked.value;
-                    }
-                }
+        const formData = new FormData();
+        formData.append('image', surveyData.imageFile);
 
-                if (canProceed && currentStep < totalSteps) {
-                    currentStep++;
-                    updateUI();
-                }
+        currentStep = totalSteps + 1;
+        updateUI();
+        steps.result.innerHTML = '<div class="loader"></div><p style="text-align: center;">AI가 이미지를 분석 중입니다...</p>';
+
+        fetch('/api/surgery/predict', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`서버 오류 발생: ${response.statusText}`);
             }
-            else if (target.classList.contains('btn-prev')) {
-                if (currentStep > 1) {
-                    currentStep--;
-                    updateUI();
-                } else {
-                    goToMainPage();
-                }
-            }
-            else if (target.classList.contains('btn-submit')) {
-                const checked = Array.from(document.querySelectorAll('#step5 input:checked'));
-                if (checked.length === 0) {
-                    alert('현재 상태를 1개 이상 선택해주세요.');
-                    return;
-                }
-                surveyData.status = checked.map(el => el.value);
-
-                console.log("최종 설문 데이터:", surveyData);
-                // 여기에 fetch를 사용하여 AI 서버로 surveyData를 보내는 로직을 추가합니다.
-
-                const dummyResult = {
-                    riskLevel: "위험", riskScore: 25, maxScore: 30,
-                    emergencyMessage: "생명이 위험할 수 있는 응급상황입니다.",
-                    emergencyGuide: "즉시 119에 신고하고 응급실로 이송해야 합니다.",
-                    detailedResults: [
-                        { question: "외상 종류", answer: surveyData.injuries.join(', '), riskScore: 5 },
-                        { question: "출혈 정도", answer: surveyData.bleeding, riskScore: 8 },
-                        { question: "통증과 움직임", answer: surveyData.pain, riskScore: 6 },
-                        { question: "현재 상태", answer: surveyData.status.join(', '), riskScore: 6 },
-                    ],
-                    recommendedDepartments: [
-                        { name: "응급의학과", description: "생명과 직결된 응급상황으로, 즉각적인 처치가 필요합니다." },
-                        { name: "정형외과", description: "골절 및 관절 손상에 대한 전문적인 치료가 필요합니다." }
-                    ]
-                };
-                renderResult(dummyResult);
-                currentStep = totalSteps + 1;
-                updateUI();
-            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("AI 서버 응답:", data);
+            renderResult(data); // AI 응답 결과를 화면에 렌더링
+        })
+        .catch(error => {
+            console.error('AI 분석 요청 실패:', error);
+            steps.result.innerHTML = `
+                <div class="error-message">
+                    <h3>진단 중 오류 발생</h3>
+                    <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                    <button type="button" class="btn-primary" id="restart-button">다시 진단하기</button>
+                </div>
+            `;
+            document.getElementById('restart-button').addEventListener('click', restartSurvey);
         });
-    }
+    };
 
-    // 주변 병원 정보를 표시하는 함수
-    function displayNearbyHospitals() {
+    const handleFiles = (files) => {
+        if (!files || files.length === 0) return;
+        const file = files[0];
+        console.log('선택된 파일:', file.name);
+        surveyData.imageFile = file;
+        dragDropArea.querySelector('p').textContent = `선택된 파일: ${file.name}`;
+        dragDropArea.querySelector('i').style.display = 'none';
+    };
+
+    const displayNearbyHospitals = () => {
         const mapContainer = document.getElementById('map-container');
-        const hospitalListContainer = document.getElementById('nearby-hospitals-list');
-        if (!mapContainer || !hospitalListContainer) return;
+        const listContainer = document.querySelector('.hospital-grid');
+        if (!mapContainer || !listContainer) return;
+
+        const displayError = (message) => listContainer.innerHTML = `<p style="text-align: center; color: #888;">${message}</p>`;
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
@@ -196,31 +203,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 places.keywordSearch('응급실', (data, status) => {
                     if (status === kakao.maps.services.Status.OK) {
-                        hospitalListContainer.innerHTML = '';
+                        listContainer.innerHTML = '';
                         const bounds = new kakao.maps.LatLngBounds();
                         data.forEach(place => {
                             const placePosition = new kakao.maps.LatLng(place.y, place.x);
-                            new kakao.maps.Marker({ map: map, position: placePosition });
+                            new kakao.maps.Marker({ map, position: placePosition });
                             const hospitalDiv = document.createElement('div');
-                            hospitalDiv.className = 'hospital-item card';
-                            hospitalDiv.innerHTML = `<strong>${place.place_name}</strong><div class="details">${place.address_name}</div><div class="details">📞 ${place.phone || '전화번호 없음'}</div><div class="buttons"><a href="https://map.kakao.com/link/to/${place.id}" class="btn btn-primary" target="_blank">길찾기</a><a href="${place.place_url}" class="btn btn-secondary" target="_blank">상세보기</a></div>`;
-                            hospitalListContainer.appendChild(hospitalDiv);
+                            hospitalDiv.className = 'hospital-item';
+                            hospitalDiv.innerHTML = `
+                                <strong>${place.place_name}</strong>
+                                <div class="details">${place.address_name}</div>
+                                <div class="details">📞 ${place.phone || '전화번호 없음'}</div>
+                                <div class="buttons">
+                                    <a href="https://map.kakao.com/link/to/${place.id}" class="btn btn-primary" target="_blank">길찾기</a>
+                                    <a href="${place.place_url}" class="btn btn-secondary" target="_blank">상세보기</a>
+                                </div>`;
+                            listContainer.appendChild(hospitalDiv);
                             bounds.extend(placePosition);
                         });
                         map.setBounds(bounds);
                     } else {
-                        hospitalListContainer.innerHTML = '<p>주변 응급실 정보를 찾을 수 없습니다.</p>';
+                        displayError('주변 응급실 정보를 찾을 수 없습니다.');
                     }
                 }, { location: userLocation, radius: 10000 });
-            }, () => {
-                hospitalListContainer.innerHTML = '<p>위치 정보 제공에 동의하시면 주변 병원 정보를 볼 수 있습니다.</p>';
-            });
+            }, () => displayError('위치 정보 제공에 동의하시면 주변 병원 정보를 볼 수 있습니다.'));
         } else {
-            hospitalListContainer.innerHTML = '<p>이 브라우저는 위치 정보를 지원하지 않습니다.</p>';
+            displayError('이 브라우저는 위치 정보를 지원하지 않습니다.');
         }
+    };
+
+    // --- 이벤트 리스너 설정 ---
+    surveyContainer.addEventListener('click', (e) => {
+        const target = e.target.closest('button');
+        if (!target) return;
+
+        if (target.classList.contains('btn-next') || target.classList.contains('btn-skip')) {
+            if (target.classList.contains('btn-next') && !validateStep(currentStep)) {
+                 return;
+            }
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        } else if (target.classList.contains('btn-prev')) {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        } else if (target.classList.contains('btn-submit')) {
+            if (validateStep(currentStep)) {
+                submitSurvey();
+            }
+        }
+    });
+
+    document.getElementById('upload-photo-button')?.addEventListener('click', () => fileInput.click());
+    fileInput?.addEventListener('change', () => handleFiles(fileInput.files));
+
+    if (dragDropArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, () => dragDropArea.style.backgroundColor = '#f0f8ff', false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dragDropArea.addEventListener(eventName, () => dragDropArea.style.backgroundColor = 'transparent', false);
+        });
+        dragDropArea.addEventListener('drop', e => handleFiles(e.dataTransfer.files), false);
     }
 
-    // 초기 UI 설정 및 지도 로드
+    // --- 초기화 ---
+    if (typeof Swiper !== 'undefined') {
+        new Swiper('.photo-guide-slider', {
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            loop: true,
+        });
+    }
+
     updateUI();
     displayNearbyHospitals();
 });

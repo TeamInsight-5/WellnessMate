@@ -5,6 +5,7 @@
     <title>내과 상담</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/internalmedicine.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=48475be29fda82ad232749bbb6f73ea1&libraries=services"></script>
 </head>
 <body>
@@ -26,7 +27,7 @@
         <div class="survey-container">
             <div class="progress-bar-container">
                 <span class="progress-text">진행률</span>
-                <div class="progress-bar">\
+                <div class="progress-bar">
                     <div class="progress" style="width: 25%;"></div>
                 </div>
                 <span class="step-text">1/4</span>
@@ -111,35 +112,42 @@
             </div>
 
             <div id="result" class="survey-step" style="display: none;">
-                <h2>건강상태 진단 결과</h2>
-                <div class="result-card">
-                    <div class="result-header">
-                        <h3 id="resultTitle"></h3>
-                        <span class="urgency-badge" id="urgencyBadge"></span>
-                    </div>
-                    <div class="risk-score">
-                        <p>위험도 점수</p>
-                        <div class="progress-bar-small">
-                            <div class="progress-fill" id="riskProgress"></div>
+                <div id="loading-container" style="display: none; text-align: center;">
+                    <h2><i class="fas fa-spinner fa-spin"></i> AI가 진단 중입니다...</h2>
+                    <p style="color: var(--text-light);">선택하신 내용을 바탕으로 건강 상태를 분석하고 있습니다.</p>
+                </div>
+
+                <div id="result-content">
+                    <h2>건강상태 진단 결과</h2>
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3 id="resultTitle"></h3>
+                            <span class="urgency-badge" id="urgencyBadge"></span>
                         </div>
-                        <span id="riskScore"></span>
+                        <div class="risk-score">
+                            <p>위험도 점수</p>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" id="riskProgress"></div>
+                            </div>
+                            <span id="riskScore"></span>
+                        </div>
+                        <p id="resultMessage"></p>
                     </div>
-                    <p id="resultMessage"></p>
-                </div>
 
-                <div class="recommendation-section">
-                    <h4>추천 진료과</h4>
-                    <div id="recommendedDepartments"></div>
-                </div>
+                    <div class="recommendation-section">
+                        <h4>추천 진료과</h4>
+                        <div id="recommendedDepartments"></div>
+                    </div>
 
-                <div class="expected-disease">
-                    <h4>예상 질환명</h4>
-                    <div id="expectedDisease"></div>
-                </div>
+                    <div class="expected-disease">
+                        <h4>예상 질환명</h4>
+                        <div id="expectedDisease"></div>
+                    </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn-primary" onclick="restartSurvey()">다시 진단하기</button>
-                    <button type="button" class="btn-secondary" onclick="goToMainPage()">메인으로 돌아가기</button>
+                    <div class="button-group">
+                        <button type="button" class="btn-primary">다시 진단하기</button>
+                        <button type="button" class="btn-secondary">메인으로 돌아가기</button>
+                    </div>
                 </div>
             </div>
         </div>

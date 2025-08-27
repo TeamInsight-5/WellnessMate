@@ -1,44 +1,66 @@
 package com.example.ai_project.main.controller;
 
+import com.example.ai_project.main.dto.WoundResponse;
+import com.example.ai_project.main.service.SurgeryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 
+// 💡 @Controller는 HTML 페이지를 반환하고, @RestController는 데이터(JSON)를 반환합니다.
+// 여기서는 두 가지 역할을 모두 하므로 @Controller를 사용하고 API 메소드에 @ResponseBody를 붙입니다.
 @Controller
 public class SurgeryController {
 
-    @GetMapping("/surgery")
-    public String showSurgeryPage() {
-        return "surgery"; // Renders surgery.html
+    private final SurgeryService surgeryService;
+
+    // 💡 @Autowired를 통해 SurgeryService를 주입받습니다.
+    @Autowired
+    public SurgeryController(SurgeryService surgeryService) {
+        this.surgeryService = surgeryService;
     }
 
-    @PostMapping("/api/surgery/diagnose")
-    @ResponseBody
-    public Map<String, Object> diagnoseSurgery(@RequestBody Map<String, Object> request) {
-        // TODO: Implement the logic for AI image analysis and emergency assessment
+    // --- 페이지 라우팅 ---
+    @GetMapping("/surgery")
+    public String showSurgeryPage() {
+        // templates/surgery.html 파일을 렌더링해서 보여줍니다.
+        return "surgery";
+    }
 
-        // This is a dummy response for now
-        return Map.of(
-                "riskLevel", "위험",
-                "riskScore", 20,
-                "maxScore", 30,
-                "emergencyMessage", "생명이 위험할 수 있는 응급상황",
-                "emergencyGuide", "119 신고 후 즉시 응급실 이송",
-                "detailedResults", List.of(
-                        Map.of("question", "어떤 종류의 외상을 입으셨나요?", "answer", "관통상", "riskScore", 5),
-                        Map.of("question", "출혈의 정도는 어떠한가요?", "answer", "심한 출혈 (멈추지 않음)", "riskScore", 5),
-                        Map.of("question", "통증과 움직임은 어떠한가요?", "answer", "의식 잃음", "riskScore", 6),
-                        Map.of("question", "현재 상태를 확인해주세요", "answer", "빠른 호흡", "riskScore", 4)
-                ),
-                "recommendedDepartments", List.of(
-                        Map.of("name", "응급의학과", "description", "생명 위험 응급상황으로 즉시 응급처치 필요"),
-                        Map.of("name", "일반외과", "description", "열상, 골절, 이물질 제거 등 일반 외과적 처치")
-                )
-        );
+    // --- API 엔드포인트 ---
+    // 💡 이미지 파일을 받는 API로 수정했습니다.
+    @PostMapping("/api/surgery/predict")
+    @ResponseBody // 💡 이 메소드는 HTML이 아닌 JSON 데이터를 반환함을 명시합니다.
+    public ResponseEntity<WoundResponse> predictWound(@RequestParam("image") MultipartFile imageFile) {
+        // 💡 @RequestParam("image") : 'image'라는 이름으로 들어오는 파일 데이터를 받습니다.
+
+        if (imageFile.isEmpty()) {
+            // 이미지가 비어있을 경우 400 Bad Request 오류를 반환합니다.
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // SurgeryService를 호출하여 AI 분석을 요청합니다.
+            WoundResponse response = surgeryService.getWoundAnalysis(imageFile);
+
+            if (response != null) {
+                // 성공적으로 응답을 받으면 200 OK 상태와 함께 결과를 반환합니다.
+                return ResponseEntity.ok(response);
+            } else {
+                // 서비스에서 null을 반환하면 (AI 서버 통신 실패 등) 500 Internal Server Error를 반환합니다.
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        } catch (IOException e) {
+            // 파일 처리 중 I/O 오류가 발생하면 500 오류를 반환합니다.
+            System.err.println("이미지 파일 처리 중 오류 발생: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

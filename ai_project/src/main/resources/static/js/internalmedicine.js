@@ -1,14 +1,10 @@
-// goToMainPage 함수를 추가합니다.
-function goToMainPage() {
-    window.location.href = '/main'; // 메인 페이지의 URL로 이동합니다.
-}
-
-// 설문을 처음부터 다시 시작하는 함수
-function restartSurvey() {
-    location.reload(); // 페이지를 새로고침하여 설문을 재시작합니다.
-}
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// 내과 상담 페이지 스크립트 (internalmedicine.js) - 수정된 최종본
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- 상태 변수 및 상수 정의 ---
     let currentStep = 1;
     const totalSteps = 4;
     const surveyData = {
@@ -18,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         history: []
     };
 
+    // --- 주요 DOM 요소 선택 ---
     const steps = {
         1: document.getElementById('step1'),
         2: document.getElementById('step2'),
@@ -25,15 +22,32 @@ document.addEventListener('DOMContentLoaded', () => {
         4: document.getElementById('step4'),
         result: document.getElementById('result')
     };
-
+    const surveyContainer = document.querySelector('.survey-container');
     const progressBar = document.querySelector('.progress');
     const stepText = document.querySelector('.step-text');
-    const surveyContainer = document.querySelector('.survey-container');
 
+    // 결과 페이지 요소
+    const resultTitle = document.getElementById('resultTitle');
+    const urgencyBadge = document.getElementById('urgencyBadge');
+    const riskProgress = document.getElementById('riskProgress');
+    const riskScore = document.getElementById('riskScore');
+    const resultMessage = document.getElementById('resultMessage');
+    const recommendedDepartments = document.getElementById('recommendedDepartments');
+    const expectedDisease = document.getElementById('expectedDisease');
+    // 로딩 및 결과 컨테이너 요소 추가
+    const loadingContainer = document.getElementById('loading-container');
+    const resultContent = document.getElementById('result-content');
+
+
+    // --- 함수 정의 ---
+
+    // 페이지 이동 함수
+    const goToMainPage = () => window.location.href = '/main';
+    const restartSurvey = () => window.location.reload();
+
+    // UI를 현재 단계에 맞게 업데이트하는 함수
     const updateUI = () => {
-        Object.values(steps).forEach(step => {
-            step.style.display = 'none';
-        });
+        Object.values(steps).forEach(step => step && (step.style.display = 'none'));
 
         if (currentStep <= totalSteps) {
             steps[currentStep].style.display = 'block';
@@ -47,26 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // 결과 데이터를 화면에 렌더링하는 함수
     const renderResult = (data) => {
-        const resultTitle = document.getElementById('resultTitle');
-        const urgencyBadge = document.getElementById('urgencyBadge');
-        const riskProgress = document.getElementById('riskProgress');
-        const riskScore = document.getElementById('riskScore');
-        const resultMessage = document.getElementById('resultMessage');
-        const recommendedDepartments = document.getElementById('recommendedDepartments');
-        const expectedDisease = document.getElementById('expectedDisease');
-
-        recommendedDepartments.innerHTML = '';
-        expectedDisease.innerHTML = '';
-
         resultTitle.textContent = data.expectedDisease.name;
         urgencyBadge.textContent = data.expectedDisease.urgency;
-        urgencyBadge.className = `urgency-badge ${data.expectedDisease.urgency}`;
-
-        riskProgress.style.width = `${data.riskScore / 20 * 100}%`;
+        urgencyBadge.className = `urgency-badge ${data.expectedDisease.urgency.toLowerCase()}`;
+        riskProgress.style.width = `${(data.riskScore / 20) * 100}%`;
         riskScore.textContent = `${data.riskScore}/20`;
         resultMessage.textContent = data.riskMessage;
 
+        recommendedDepartments.innerHTML = '';
         data.recommendedDepartments.forEach(dept => {
             const div = document.createElement('div');
             div.className = 'department-item';
@@ -74,165 +78,98 @@ document.addEventListener('DOMContentLoaded', () => {
             recommendedDepartments.appendChild(div);
         });
 
-        const diseaseCard = document.createElement('div');
-        diseaseCard.className = 'disease-card';
-        diseaseCard.innerHTML = `
-            <div class="disease-header">
-                <h3>${data.expectedDisease.name}</h3>
-                <span class="urgency-badge ${data.expectedDisease.urgency}">${data.expectedDisease.urgency}</span>
+        expectedDisease.innerHTML = `
+            <div class="disease-card">
+                <div class="disease-header">
+                    <h3>${data.expectedDisease.name}</h3>
+                    <span class="urgency-badge ${data.expectedDisease.urgency.toLowerCase()}">${data.expectedDisease.urgency}</span>
+                </div>
+                <p><strong>주요 증상:</strong> ${data.expectedDisease.relatedSymptoms.join(', ')}</p>
+                <p><strong>추천 진료과:</strong> ${data.expectedDisease.recommendedDepartment}</p>
             </div>
-            <p><strong>주요 증상:</strong> ${data.expectedDisease.relatedSymptoms.join(', ')}</p>
-            <p><strong>추천 진료과:</strong> ${data.expectedDisease.recommendedDepartment}</p>
         `;
-        expectedDisease.appendChild(diseaseCard);
+
+        // 결과 화면의 버튼들에 이벤트 리스너를 동적으로 추가
+        resultContent.querySelector('.btn-primary').addEventListener('click', restartSurvey);
+        resultContent.querySelector('.btn-secondary').addEventListener('click', goToMainPage);
     };
 
-    surveyContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-next')) {
-            if (currentStep === 1) {
-                const checkedSymptoms = Array.from(document.querySelectorAll('#symptomForm input:checked')).map(el => el.value);
-                if (checkedSymptoms.length === 0) {
-                    alert('증상을 하나 이상 선택해주세요.');
-                    return;
-                }
-                surveyData.symptoms = checkedSymptoms;
-            } else if (currentStep === 2) {
-                const selectedDuration = document.querySelector('#durationForm input:checked');
-                if (!selectedDuration) {
-                    alert('기간을 선택해주세요.');
-                    return;
-                }
-                surveyData.duration = selectedDuration.value;
-            } else if (currentStep === 3) {
-                const selectedSeverity = document.querySelector('#severityForm input:checked');
-                if (!selectedSeverity) {
-                    alert('심각도를 선택해주세요.');
-                    return;
-                }
-                surveyData.severity = selectedSeverity.value;
-            }
+    // 서버로 설문 데이터를 보내고 결과를 처리하는 함수
+    const handleFormSubmission = () => {
+        // 로딩 화면 표시 (기존 내용 숨기고 로딩 표시)
+        resultContent.style.display = 'none';
+        loadingContainer.style.display = 'block';
+        currentStep = totalSteps + 1;
+        updateUI();
 
-            currentStep++;
-            updateUI();
-        } else if (e.target.classList.contains('btn-prev')) {
-            if (currentStep > 1) {
-                currentStep--;
-                updateUI();
-            } else {
-                goToMainPage();
-            }
-        } else if (e.target.classList.contains('btn-submit')) {
-            const checkedHistory = Array.from(document.querySelectorAll('#historyForm input:checked')).map(el => el.value);
-            surveyData.history = checkedHistory;
-
-            const resultContainer = document.getElementById('result');
-            resultContainer.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> AI가 진단 중입니다...</h2>';
-            currentStep = totalSteps + 1;
-            updateUI();
-
-            fetch('/internal-medicine/diagnose', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(surveyData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 응답에 문제가 있습니다. 상태 코드: ' + response.status);
-                }
-                return response.json(); // ⚠️ response.json() 사용
-            })
-            .then(aiResult => {
-                resultContainer.innerHTML = `
-                    <h2>건강상태 진단 결과</h2>
-                    <div class="result-card">
-                        <div class="result-header">
-                            <h3 id="resultTitle"></h3>
-                            <span class="urgency-badge" id="urgencyBadge"></span>
-                        </div>
-                        <div class="risk-score">
-                            <p>위험도 점수</p>
-                            <div class="progress-bar-small">
-                                <div class="progress-fill" id="riskProgress"></div>
-                            </div>
-                            <span id="riskScore"></span>
-                        </div>
-                        <p id="resultMessage"></p>
-                    </div>
-                    <div class="recommendation-section">
-                        <h4>추천 진료과</h4>
-                        <div id="recommendedDepartments"></div>
-                    </div>
-                    <div class="expected-disease">
-                        <h4>예상 질환명</h4>
-                        <div id="expectedDisease"></div>
-                    </div>
-                    <div class="button-group">
-                        <button type="button" class="btn-primary" onclick="restartSurvey()">다시 진단하기</button>
-                        <button type="button" class="btn-secondary" onclick="goToMainPage()">메인으로 돌아가기</button>
-                    </div>
-                `;
-
-                renderResult(aiResult);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                resultContainer.innerHTML = `
-                    <h2>진단 중 오류 발생</h2>
-                    <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
-                    <div class="button-group">
-                        <button type="button" class="btn-primary" onclick="restartSurvey()">다시 진단하기</button>
-                    </div>
-                `;
-            });
-        }
-    });
-
-    const historyCheckboxes = document.querySelectorAll('#historyForm input[name="history"]');
-    const noHistoryCheckbox = document.querySelector('#historyForm input[value="none"]');
-
-    historyCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-            if (e.target.value === 'none' && e.target.checked) {
-                historyCheckboxes.forEach(cb => {
-                    if (cb.value !== 'none') cb.checked = false;
-                });
-            } else if (e.target.value !== 'none' && e.target.checked) {
-                noHistoryCheckbox.checked = false;
-            }
+        fetch('/internal-medicine/diagnose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(surveyData),
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`서버 오류: ${response.status}`);
+            return response.json();
+        })
+        .then(aiResult => {
+            // 서버로부터 받은 결과를 화면에 렌더링
+            renderResult(aiResult);
+            // 로딩 화면 숨기고 결과 표시
+            loadingContainer.style.display = 'none';
+            resultContent.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('진단 오류:', error);
+            loadingContainer.innerHTML = `
+                <h2>진단 중 오류 발생</h2>
+                <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                <div class="button-group">
+                    <button type="button" class="btn-primary" id="restart-button-error">다시 진단하기</button>
+                </div>
+            `;
+            document.getElementById('restart-button-error').addEventListener('click', restartSurvey);
         });
-    });
+    };
 
-    function displayNearbyHospitals() {
+    // '없음' 체크박스 로직을 처리하는 함수
+    const handleHistoryCheckboxes = () => {
+        const historyCheckboxes = document.querySelectorAll('#historyForm input[name="history"]');
+        const noHistoryCheckbox = document.querySelector('#historyForm input[value="none"]');
+        if (!noHistoryCheckbox) return;
+
+        historyCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                if (e.target === noHistoryCheckbox && e.target.checked) {
+                    historyCheckboxes.forEach(cb => {
+                        if (cb !== noHistoryCheckbox) cb.checked = false;
+                    });
+                } else if (e.target !== noHistoryCheckbox && e.target.checked) {
+                    noHistoryCheckbox.checked = false;
+                }
+            });
+        });
+    };
+
+    // 주변 병원 정보를 Kakao Maps API로 표시하는 함수
+    const displayNearbyHospitals = () => {
         const mapContainer = document.getElementById('map-container');
-        const hospitalListContainer = document.getElementById('nearby-hospitals-list');
+        const listContainer = document.getElementById('nearby-hospitals-list');
+        if (!mapContainer || !listContainer) return;
+
+        const displayError = (message) => listContainer.innerHTML = `<p style="text-align:center;">${message}</p>`;
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-                const userLocation = new kakao.maps.LatLng(userLat, userLng);
-
-                const mapOption = {
-                    center: userLocation,
-                    level: 4
-                };
-                const map = new kakao.maps.Map(mapContainer, mapOption);
-
+                const userLocation = new kakao.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                const map = new kakao.maps.Map(mapContainer, { center: userLocation, level: 5 });
                 const places = new kakao.maps.services.Places();
+
                 places.keywordSearch('내과', (data, status) => {
                     if (status === kakao.maps.services.Status.OK) {
-                        hospitalListContainer.innerHTML = '';
+                        listContainer.innerHTML = '';
                         const bounds = new kakao.maps.LatLngBounds();
-
                         data.forEach(place => {
-                            const placePosition = new kakao.maps.LatLng(place.y, place.x);
-                            const marker = new kakao.maps.Marker({
-                                map: map,
-                                position: placePosition
-                            });
-
+                            const marker = new kakao.maps.Marker({ map, position: new kakao.maps.LatLng(place.y, place.x) });
                             const hospitalDiv = document.createElement('div');
                             hospitalDiv.className = 'hospital-item';
                             hospitalDiv.innerHTML = `
@@ -240,33 +177,62 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="details">${place.address_name}</div>
                                 <div class="details">📞 ${place.phone || '전화번호 없음'}</div>
                                 <div class="buttons">
-                                    <a href="https://map.kakao.com/link/to/${place.id}" class="btn-directions" target="_blank">길찾기</a>
-                                    <a href="${place.place_url}" class="btn-detail" target="_blank">자세히 보기</a>
-                                </div>
-                            `;
-                            hospitalListContainer.appendChild(hospitalDiv);
-                            bounds.extend(placePosition);
+                                    <a href="https://map.kakao.com/link/to/${place.id}" class="btn-primary" target="_blank">길찾기</a>
+                                    <a href="${place.place_url}" class="btn-secondary" target="_blank">자세히 보기</a>
+                                </div>`;
+                            listContainer.appendChild(hospitalDiv);
+                            bounds.extend(new kakao.maps.LatLng(place.y, place.x));
                         });
                         map.setBounds(bounds);
                     } else {
-                        hospitalListContainer.innerHTML = '<p>주변 병원 정보를 찾을 수 없습니다.</p>';
+                        displayError('주변 병원 정보를 찾을 수 없습니다.');
                     }
-                }, {
-                    location: userLocation,
-                    radius: 10000
-                });
-
+                }, { location: userLocation, radius: 10000 });
             }, () => {
-                hospitalListContainer.innerHTML = '<p>위치 정보 제공에 동의해주시면 더 정확한 병원 정보를 얻을 수 있습니다.</p>';
-                const defaultLocation = new kakao.maps.LatLng(37.5665, 126.9780);
-                const mapOption = { center: defaultLocation, level: 6 };
-                new kakao.maps.Map(mapContainer, mapOption);
+                displayError('위치 정보 제공에 동의하시면 주변 병원 정보를 볼 수 있습니다.');
             });
         } else {
-            hospitalListContainer.innerHTML = '<p>이 브라우저는 위치 정보를 지원하지 않습니다.</p>';
+            displayError('이 브라우저는 위치 정보를 지원하지 않습니다.');
         }
-    }
+    };
 
+    // --- 이벤트 리스너 설정 ---
+
+    // 메인 설문 컨테이너의 버튼 클릭 이벤트 위임
+    surveyContainer.addEventListener('click', (e) => {
+        const target = e.target;
+        let canProceed = true;
+
+        if (target.matches('.btn-next')) {
+            if (currentStep === 1) {
+                const checked = Array.from(steps[1].querySelectorAll('input:checked'));
+                if (checked.length === 0) { alert('증상을 하나 이상 선택해주세요.'); canProceed = false; }
+                else { surveyData.symptoms = checked.map(el => el.value); }
+            } else if (currentStep === 2) {
+                const checked = steps[2].querySelector('input:checked');
+                if (!checked) { alert('기간을 선택해주세요.'); canProceed = false; }
+                else { surveyData.duration = checked.value; }
+            } else if (currentStep === 3) {
+                const checked = steps[3].querySelector('input:checked');
+                if (!checked) { alert('심각도를 선택해주세요.'); canProceed = false; }
+                else { surveyData.severity = checked.value; }
+            }
+            if (canProceed && currentStep < totalSteps) { currentStep++; updateUI(); }
+
+        } else if (target.matches('.btn-prev')) {
+            if (currentStep > 1) { currentStep--; updateUI(); }
+            else { goToMainPage(); }
+
+        } else if (target.matches('.btn-submit')) {
+            const checked = Array.from(steps[4].querySelectorAll('input:checked'));
+            if(checked.length === 0) { alert('병력 유무를 선택해주세요.'); return; }
+            surveyData.history = checked.map(el => el.value);
+            handleFormSubmission();
+        }
+    });
+
+    // --- 초기화 실행 ---
+    handleHistoryCheckboxes();
     displayNearbyHospitals();
     updateUI();
 });
