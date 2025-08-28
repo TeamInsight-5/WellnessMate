@@ -1,5 +1,5 @@
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-// 내과 상담 페이지 스크립트 (internalmedicine.js) - 수정된 최종본
+// 내과 상담 페이지 스크립트 (internalmedicine.js) - 진행률 숫자 표시 최종본
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,21 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultMessage = document.getElementById('resultMessage');
     const recommendedDepartments = document.getElementById('recommendedDepartments');
     const expectedDisease = document.getElementById('expectedDisease');
-    // 로딩 및 결과 컨테이너 요소 추가
     const loadingContainer = document.getElementById('loading-container');
     const resultContent = document.getElementById('result-content');
 
 
     // --- 함수 정의 ---
 
-    // 페이지 이동 함수
     const goToMainPage = () => window.location.href = '/main';
     const restartSurvey = () => window.location.reload();
 
-    // UI를 현재 단계에 맞게 업데이트하는 함수
     const updateUI = () => {
         Object.values(steps).forEach(step => step && (step.style.display = 'none'));
-
         if (currentStep <= totalSteps) {
             steps[currentStep].style.display = 'block';
             const progress = (currentStep / totalSteps) * 100;
@@ -61,15 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 결과 데이터를 화면에 렌더링하는 함수
     const renderResult = (data) => {
         resultTitle.textContent = data.expectedDisease.name;
         urgencyBadge.textContent = data.expectedDisease.urgency;
         urgencyBadge.className = `urgency-badge ${data.expectedDisease.urgency.toLowerCase()}`;
-        riskProgress.style.width = `${(data.riskScore / 20) * 100}%`;
-        riskScore.textContent = `${data.riskScore}/20`;
+        const riskPercentage = (data.riskScore / 20) * 100;
+        riskProgress.style.width = `${riskPercentage}%`;
+        riskScore.textContent = `${Math.round(riskPercentage)}%`;
         resultMessage.textContent = data.riskMessage;
-
         recommendedDepartments.innerHTML = '';
         data.recommendedDepartments.forEach(dept => {
             const div = document.createElement('div');
@@ -77,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
             div.textContent = `• ${dept}`;
             recommendedDepartments.appendChild(div);
         });
-
         expectedDisease.innerHTML = `
             <div class="disease-card">
                 <div class="disease-header">
@@ -88,19 +82,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>추천 진료과:</strong> ${data.expectedDisease.recommendedDepartment}</p>
             </div>
         `;
-
-        // 결과 화면의 버튼들에 이벤트 리스너를 동적으로 추가
         resultContent.querySelector('.btn-primary').addEventListener('click', restartSurvey);
         resultContent.querySelector('.btn-secondary').addEventListener('click', goToMainPage);
     };
 
-    // 서버로 설문 데이터를 보내고 결과를 처리하는 함수
+    // 💡💡💡 [수정됨] 진행률 UI를 포함하도록 변경된 함수 💡💡💡
     const handleFormSubmission = () => {
-        // 로딩 화면 표시 (기존 내용 숨기고 로딩 표시)
         resultContent.style.display = 'none';
         loadingContainer.style.display = 'block';
         currentStep = totalSteps + 1;
         updateUI();
+
+        // 1. [핵심 수정] 진행률 숫자(span)와 바(div)를 분리한 HTML 구조 삽입
+        loadingContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 0;">
+                <p style="font-weight: bold; font-size: 1.1rem; margin-bottom: 20px;">AI가 증상을 분석 중입니다...</p>
+                <div class="progress-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 15px; width: 80%; margin: 0 auto;">
+                    <div class="progress-container" style="flex-grow: 1; background-color: #e9ecef; border-radius: 5px;">
+                        <div id="loading-progress-bar" style="width: 0%; height: 10px; background-color: #28a745; border-radius: 5px; transition: width 0.4s ease;"></div>
+                    </div>
+                    <span id="loading-progress-text" style="font-weight: bold; color: #28a745; min-width: 40px;">0%</span>
+                </div>
+            </div>
+        `;
+
+        // 2. [핵심 수정] 진행률 바(bar)와 텍스트(text) 요소를 모두 선택
+        const progressBar = document.getElementById('loading-progress-bar');
+        const progressText = document.getElementById('loading-progress-text');
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            if (progress < 60) progress += 2;
+            else if (progress < 90) progress += 1;
+
+            // 3. [핵심 수정] 바의 너비와 텍스트의 내용을 각각 업데이트
+            progressBar.style.width = progress + '%';
+            progressText.textContent = progress + '%';
+        }, 120);
 
         fetch('/internal-medicine/diagnose', {
             method: 'POST',
@@ -112,26 +130,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(aiResult => {
-            // 서버로부터 받은 결과를 화면에 렌더링
-            renderResult(aiResult);
-            // 로딩 화면 숨기고 결과 표시
-            loadingContainer.style.display = 'none';
-            resultContent.style.display = 'block';
+            clearInterval(interval);
+            // 4. [핵심 수정] 완료 시 바와 텍스트 모두 100%로 업데이트
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            setTimeout(() => {
+                renderResult(aiResult);
+                loadingContainer.style.display = 'none';
+                resultContent.style.display = 'block';
+            }, 500);
         })
         .catch(error => {
+            clearInterval(interval);
             console.error('진단 오류:', error);
             loadingContainer.innerHTML = `
-                <h2>진단 중 오류 발생</h2>
-                <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
-                <div class="button-group">
-                    <button type="button" class="btn-primary" id="restart-button-error">다시 진단하기</button>
+                <div style="text-align: center; padding: 40px 0;">
+                    <h2>진단 중 오류 발생</h2>
+                    <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                    <div class="button-group" style="justify-content: center;">
+                        <button type="button" class="btn-primary" id="restart-button-error">다시 진단하기</button>
+                    </div>
                 </div>
             `;
             document.getElementById('restart-button-error').addEventListener('click', restartSurvey);
         });
     };
 
-    // '없음' 체크박스 로직을 처리하는 함수
     const handleHistoryCheckboxes = () => {
         const historyCheckboxes = document.querySelectorAll('#historyForm input[name="history"]');
         const noHistoryCheckbox = document.querySelector('#historyForm input[value="none"]');
@@ -140,9 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         historyCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
                 if (e.target === noHistoryCheckbox && e.target.checked) {
-                    historyCheckboxes.forEach(cb => {
-                        if (cb !== noHistoryCheckbox) cb.checked = false;
-                    });
+                    historyCheckboxes.forEach(cb => { if (cb !== noHistoryCheckbox) cb.checked = false; });
                 } else if (e.target !== noHistoryCheckbox && e.target.checked) {
                     noHistoryCheckbox.checked = false;
                 }
@@ -150,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // 주변 병원 정보를 Kakao Maps API로 표시하는 함수
     const displayNearbyHospitals = () => {
         const mapContainer = document.getElementById('map-container');
         const listContainer = document.getElementById('nearby-hospitals-list');
@@ -169,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         listContainer.innerHTML = '';
                         const bounds = new kakao.maps.LatLngBounds();
                         data.forEach(place => {
-                            const marker = new kakao.maps.Marker({ map, position: new kakao.maps.LatLng(place.y, place.x) });
+                            new kakao.maps.Marker({ map, position: new kakao.maps.LatLng(place.y, place.x) });
                             const hospitalDiv = document.createElement('div');
                             hospitalDiv.className = 'hospital-item';
                             hospitalDiv.innerHTML = `
@@ -197,8 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 이벤트 리스너 설정 ---
-
-    // 메인 설문 컨테이너의 버튼 클릭 이벤트 위임
     surveyContainer.addEventListener('click', (e) => {
         const target = e.target;
         let canProceed = true;
@@ -233,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 초기화 실행 ---
     handleHistoryCheckboxes();
+
     displayNearbyHospitals();
     updateUI();
 });

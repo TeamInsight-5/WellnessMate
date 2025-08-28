@@ -5,16 +5,16 @@
     <title>외과 상담</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/surgery.css}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=48475be29fda82ad232749bbb6f73ea1&libraries=services"></script>
 </head>
 <body>
 
 <div class="main-wrapper">
-    <div th:replace="~{main/mainPage:: header}">
-        <header style="padding: 15px 20px; border-bottom: 1px solid #eee; font-size: 1.2rem; font-weight: bold;">WellnessMate (공통 헤더 영역)</header>
-    </div>
+    <div th:replace="~{main/mainPage:: header}"></div>
 
     <div class="page-header">
         <div class="header-icon">✂️</div>
@@ -59,8 +59,8 @@
                     </div>
                     <input type="file" id="file-upload-input" accept="image/png, image/jpeg" style="display: none;">
                     <div class="button-group" style="border-top: none; padding-top: 0; justify-content: stretch;">
-                        <button id="upload-photo-button" class="btn-primary" style="flex: 1;"><i class="fa-solid fa-upload"></i> 사진 업로드</button>
-                        <button class="btn-secondary" style="flex: 1;"><i class="fa-solid fa-camera"></i> 카메라 촬영</button>
+                        <button type="button" id="upload-photo-button" class="btn-primary" style="flex: 1;"><i class="fa-solid fa-upload"></i> 사진 업로드</button>
+                        <button type="button" class="btn-secondary" style="flex: 1;"><i class="fa-solid fa-camera"></i> 카메라 촬영</button>
                     </div>
                     <div id="drag-drop-area" class="drag-drop-area">
                         <i class="fa-solid fa-file-arrow-up" style="font-size: 2rem; color: #ccc;"></i>
@@ -84,10 +84,27 @@
                             <div class="swiper-button-prev"></div>
                         </div>
                     </div>
+
+                    <div class="guide-section info" style="margin-top: 20px;">
+                        <h5><i class="fa-solid fa-robot"></i> AI 사진 분석의 장점</h5>
+                        <ul>
+                            <li>외상의 크기와 깊이 정량적 측정</li>
+                            <li>상처 종류의 자동 분류</li>
+                            <li>감염 위험도 평가</li>
+                            <li>맞춤형 응급처치 가이드 제공</li>
+                        </ul>
+                    </div>
+                    <div class="guide-section aid">
+                        <h5><i class="fa-solid fa-notes-medical"></i> 분석 가능한 외상 유형</h5>
+                        <ul>
+                            <li>열상 (찢어진 상처), 자상 (찔린 상처)</li>
+                            <li>타박상, 화상, 골절</li>
+                            <li>찰과상 (긁힌 상처)</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="button-group">
                     <button type="button" class="btn-secondary btn-prev">이전</button>
-                    <button type="button" class="btn-secondary btn-skip">건너뛰기</button>
                     <button type="button" class="btn-primary btn-next">다음</button>
                 </div>
             </div>
@@ -140,8 +157,7 @@
                 </div>
             </div>
 
-            <div id="result" class="survey-step" style="display: none;">
-            </div>
+            <div id="result" class="survey-step" style="display: none;"></div>
         </main>
 
         <aside class="emergency-guide-container">
@@ -152,10 +168,6 @@
                 <ul><li>깨끗한 거즈나 천으로 출혈 부위 압박</li><li>화상 부위는 흐르는 찬물에 식히기</li><li>골절 의심 부위는 부목 등으로 고정</li></ul>
                 <h4 style="margin-top: 20px;"><span class="tip-icon">✅</span> 정확한 정보 전달</h4>
                 <p>119에 신고하거나 병원 방문 시, 언제, 어디서, 어떻게 다쳤는지 정확하게 설명하는 것이 중요합니다.</p>
-            </div>
-            <div id="guide-step2" style="display: none;">
-                <div class="guide-section info"><h5><i class="fa-solid fa-robot"></i> AI 사진 분석의 장점</h5><ul><li>외상의 크기와 깊이 정량적 측정</li><li>상처 종류의 자동 분류</li><li>감염 위험도 평가</li><li>맞춤형 응급처치 가이드 제공</li></ul></div>
-                <div class="guide-section aid"><h5><i class="fa-solid fa-notes-medical"></i> 분석 가능한 외상 유형</h5><ul><li>열상 (찢어진 상처), 자상 (찔린 상처)</li><li>타박상, 화상, 골절</li><li>찰과상 (긁힌 상처)</li></ul></div>
             </div>
 
             <div id="guide-result" style="display: none;">
@@ -173,7 +185,6 @@
                     </ul>
                 </div>
             </div>
-
         </aside>
     </div>
 
