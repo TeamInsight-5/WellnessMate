@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const guides = {
         default: document.getElementById('guide-default'),
-        // 💡💡💡 [삭제됨] guide-step2 요소는 더 이상 존재하지 않으므로 제거 💡💡💡
         result: document.getElementById('guide-result')
     };
     const progressBar = document.querySelector('.progress');
@@ -35,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const goToMainPage = () => window.location.href = '/main';
     const restartSurvey = () => window.location.reload();
 
-    // UI 업데이트 (화면 전환) - 수정됨
+    // UI 업데이트 (화면 전환)
     const updateUI = () => {
         Object.values(steps).forEach(step => step && (step.style.display = 'none'));
         Object.values(guides).forEach(guide => guide && (guide.style.display = 'none'));
@@ -43,8 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeStepElement = steps[currentStep];
         if (currentStep <= totalSteps && activeStepElement) {
             activeStepElement.style.display = 'flex';
-
-            // 💡💡💡 [수정됨] 항상 기본 가이드를 보여주도록 로직 간소화 💡💡💡
             guides.default.style.display = 'block';
 
             const progressPercentage = (currentStep / totalSteps) * 100;
@@ -61,8 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
             stepText.textContent = '결과';
         }
     };
-
-    // (이하 다른 JavaScript 함수들은 변경 없이 그대로 유지됩니다)
 
     // 각 단계별 유효성 검사
     const validateStep = (step) => {
@@ -111,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             riskColor = '#5cb85c';
         }
 
+        // ⭐️ [수정됨] 결과 카드에 '예상 질환'과 '추천 진료과'를 표시하도록 innerHTML 변경
         resultContainer.innerHTML = `
             <h2>AI 분석 결과</h2>
             <div class="result-card" style="border-left: 5px solid ${riskColor}; padding: 20px; text-align: left;">
@@ -118,6 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>🚨 위험도:</strong> <span style="color: ${riskColor}; font-weight: bold;">${data.risk}</span></p>
                 <p><strong>🩹 응급처치 가이드:</strong></p>
                 <p style="background-color: #f9f9f9; padding: 10px; border-radius: 5px;">${data.first_aid}</p>
+
+                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                <p><strong>🩺 예상 질환:</strong> ${data.expected_disease}</p>
+                <p><strong>🏥 추천 진료과:</strong> ${data.recommended_department}</p>
             </div>
             <div class="button-group">
                 <button type="button" class="btn-primary" id="restart-button">다시 진단하기</button>
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.textContent = progress + '%';
         }, 120);
 
-        fetch('/api/surgery/predict_combined', {
+        fetch('/api/surgery/predict', {
             method: 'POST',
             body: formData,
         })

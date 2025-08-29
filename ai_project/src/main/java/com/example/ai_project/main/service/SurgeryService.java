@@ -23,7 +23,7 @@ public class SurgeryService {
     private final RestTemplate restTemplate;
 
     // AI 서버 URL (Flask/FastAPI 서버)
-    @Value("${ai.surgery.api.url:http://127.0.0.1:5000/api/surgery/predict}")
+    @Value("${ai.surgery.api.url:http://127.0.0.1:8001/api/surgery/predict}")
     private String apiUrl;
 
     @Autowired
