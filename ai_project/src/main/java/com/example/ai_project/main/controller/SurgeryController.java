@@ -31,8 +31,8 @@ public class SurgeryController {
     }
 
     // --- API 엔드포인트 ---
-    // ⭐️ API 엔드포인트가 클라이언트와 일치하도록 수정
-    @PostMapping("/api/surgery/predict_combined")
+    // ⭐️ API 엔드포인트를 클라이언트와 일치하도록 수정
+    @PostMapping("/api/surgery/predict") // <-- 이 부분을 수정했습니다.
     @ResponseBody
     public ResponseEntity<WoundResponse> predictWound(
             // ⭐️ @RequestParam의 이름을 FormData의 키와 일치시킴

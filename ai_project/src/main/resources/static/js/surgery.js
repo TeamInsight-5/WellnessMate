@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
             riskColor = '#5cb85c';
         }
 
-        // ⭐️ [수정됨] 결과 카드에 '예상 질환'과 '추천 진료과'를 표시하도록 innerHTML 변경
         resultContainer.innerHTML = `
             <h2>AI 분석 결과</h2>
             <div class="result-card" style="border-left: 5px solid ${riskColor}; padding: 20px; text-align: left;">
@@ -176,7 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
             body: formData,
         })
         .then(response => {
-            if (!response.ok) { throw new Error(`서버 오류: ${response.status}`); }
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.detail || `서버 오류: ${response.status}`);
+                });
+            }
             return response.json();
         })
         .then(data => {
@@ -190,10 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             clearInterval(interval);
             console.error('AI 분석 요청 실패:', error);
+            // ⭐️ 수정된 부분: 서버에서 받은 오류 메시지를 표시합니다.
             steps.result.innerHTML = `
                 <div class="error-message" style="text-align: center; padding: 40px 0;">
                     <h3>진단 중 오류 발생</h3>
-                    <p>AI 진단에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                    <p>${error.message}</p>
                     <button type="button" class="btn-primary" id="restart-button">다시 진단하기</button>
                 </div>
             `;

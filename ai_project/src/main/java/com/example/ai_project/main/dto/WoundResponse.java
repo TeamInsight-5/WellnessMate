@@ -7,4 +7,6 @@ public class WoundResponse {
     private String name;
     private String risk;
     private String first_aid;
+    private String expected_disease;
+    private String recommended_department;
 }
