@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>아이디 찾기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            width: 350px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 10px;
+            color: blue;
+            font-weight: bold;
+        }
+        .signup-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .signup-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+<body>
+<div th:replace="~{main/mainPage:: header}"></div>
+    <div class="login-container">
+        <h2>아이디 찾기</h2>
+        <input type="email" id="email" placeholder="이메일 입력">
+        <button onclick="sendCode()">인증번호 받기</button>
+
+        <input type="text" id="code" placeholder="인증번호 입력">
+        <button onclick="verifyCode()">인증번호 확인</button>
+
+        <div id="result"></div>
+        <div class="signup-link">
+            &emsp;
+            <a th:href="@{/loginMain}">로그인 </a>
+            &nbsp;
+            <span> |</span>
+            &nbsp;
+            <a th:href="@{/findPass}">비밀번호 찾기</a>
+        </div>
+    </div>
+
+    <script>
+        function sendCode() {
+            const email = $("#email").val(); // jQuery로 요소 선택
+
+            $.ajax({
+                type: "POST",
+                url: "/api/email/send-code",
+                data: { email: email }, // key-value 쌍으로 데이터 전달
+                success: function(msg) {
+                    $("#result").text(msg); // 성공 시 결과 메시지 표시
+                },
+                error: function(xhr, status, error) {
+                    // 오류 처리 (예: HTTP 상태 코드 400)
+                    $("#result").text(xhr.responseText);
+                }
+            });
+        }
+
+        function verifyCode() {
+            const email = $("#email").val();
+            const code = $("#code").val();
+
+            $.ajax({
+                type: "POST",
+                url: "/api/email/verify-code",
+                data: { email: email, code: code },
+                success: function(msg) {
+                    $("#result").text(msg);
+                },
+                error: function(xhr, status, error) {
+                    $("#result").text(xhr.responseText);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
