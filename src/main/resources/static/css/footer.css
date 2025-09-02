@@ -1,0 +1,71 @@
+/* ───── Footer (충돌 방지를 위해 site-footer 네임스페이스 사용) ───── */
+.site-footer {
+  --footer-bg: linear-gradient(180deg, #0f172a 0%, #111827 100%); /* 블루-그레이 딥톤 */
+  --footer-fg: #ffffff;
+  --footer-muted: #9ca3af;
+  --footer-border: #374151;
+
+  background: var(--footer-bg);
+  color: var(--footer-fg);
+  padding: 48px 0 32px;
+}
+
+.site-footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.site-footer__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  text-align: center; /* 요청하신 느낌 */
+}
+
+.site-footer__brand {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--footer-fg);
+}
+
+.site-footer__title {
+  margin: 0 0 1rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--footer-fg);
+}
+
+.site-footer__muted {
+  color: var(--footer-muted);
+  margin: .25rem 0;
+}
+
+.site-footer__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.site-footer__list li { margin-bottom: .5rem; }
+
+.site-footer__link {
+  color: var(--footer-muted);
+  text-decoration: none;
+  transition: color .2s ease, opacity .2s ease;
+  cursor: pointer;
+}
+.site-footer__link:hover { color: #cfe3ff; opacity: .95; }
+
+.site-footer__bottom {
+  border-top: 1px solid var(--footer-border);
+  margin-top: 2rem;
+  padding-top: 2rem;
+  text-align: center;
+}
+
+/* 작은 화면에서 여백 살짝 키우기 */
+@media (max-width: 480px) {
+  .site-footer { padding: 56px 0 36px; }
+}

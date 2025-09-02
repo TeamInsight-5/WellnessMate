@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>외과</title>
+
+  <!-- 외부 라이브러리 CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <!-- 공통 → 페이지 → 푸터 CSS -->
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" th:href="@{/css/surgery.css}" />
+  <link rel="stylesheet" th:href="@{/css/footer.css}" />
+
+  <!-- 외부 라이브러리 JS (defer 권장) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=48475be29fda82ad232749bbb6f73ea1&libraries=services"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+</head>
+<body>
+
+<!-- 헤더 프래그먼트: 내부에 다른 콘텐츠 넣지 말고 '자체 닫기' -->
+<div th:replace="~{main/mainPage::header}"></div>
+
+<!-- 실제 페이지 본문 -->
+<div class="main-wrapper">
+
+  <div class="page-header">
+    <div class="header-icon">✂️</div>
+    <h1>외과 상담</h1>
+    <p>외상 및 응급상황 평가를 통해 적절한 응급처치와 의료 서비스를 안내받으세요</p>
+  </div>
+
+  <div class="content-container">
+    <main class="survey-container">
+
+      <div class="progress-bar-container">
+        <span class="progress-text">응급도 평가 진행률</span>
+        <div class="progress-bar"><div class="progress" id="progress-fill" style="width: 20%;"></div></div>
+        <span class="step-text" id="step-text">1/5</span>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="step1" class="survey-step">
+        <h2>어떤 종류의 외상을 입으셨나요?</h2>
+        <form class="checkbox-group" id="form-step1">
+          <label><input type="checkbox" name="injury" value="cut"> 칼이나 날카로운 물체에 베임</label>
+          <label><input type="checkbox" name="injury" value="burn"> 화상</label>
+          <label><input type="checkbox" name="injury" value="fall"> 낙상/추락</label>
+          <label><input type="checkbox" name="injury" value="traffic_accident"> 교통사고</label>
+          <label><input type="checkbox" name="injury" value="fracture"> 골절 의심</label>
+          <label><input type="checkbox" name="injury" value="bruise"> 타박상 / 멍</label>
+          <label><input type="checkbox" name="injury" value="puncture"> 관통상</label>
+          <label><input type="checkbox" name="injury" value="animal_bite"> 동물에 물림</label>
+          <label><input type="checkbox" name="injury" value="head_injury"> 머리 외상</label>
+          <label><input type="checkbox" name="injury" value="facial_injury"> 안면부 외상</label>
+        </form>
+        <div class="button-group">
+          <button type="button" class="btn-secondary btn-prev" disabled>이전</button>
+          <button type="button" class="btn-primary btn-next" data-next="2">다음</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" class="survey-step" style="display: none;">
+        <h2>외상 부위 사진을 촬영하여 AI 분석을 받아보세요 <small>(선택사항)</small></h2>
+        <div class="step-content-scroll">
+
+          <div class="guide-section info">
+            <h5><i class="fa-solid fa-shield-halved"></i> 개인정보 보호 안내</h5>
+            <p>업로드된 사진은 진단 목적으로만 사용되며, 분석 완료 후 즉시 삭제됩니다. 얼굴이나 개인 식별 정보가 포함되지 않도록 주의해주세요.</p>
+          </div>
+
+          <input type="file" id="file-upload-input" accept="image/png, image/jpeg" style="display: none;">
+
+          <div class="button-group" style="border-top: none; padding-top: 0; justify-content: stretch;">
+            <button id="upload-photo-button" class="btn-primary" style="flex: 1;" type="button"><i class="fa-solid fa-upload"></i> 사진 업로드</button>
+            <button id="open-camera-button" class="btn-secondary" style="flex: 1;" type="button"><i class="fa-solid fa-camera"></i> 카메라 촬영</button>
+          </div>
+
+          <div id="drag-drop-area" class="drag-drop-area">
+            <i class="fa-solid fa-file-arrow-up" style="font-size: 2rem;"></i>
+            <p>사진을 여기로 드래그하여 업로드</p>
+            <small>JPG, PNG 파일 지원 (최대 10MB)</small>
+          </div>
+
+          <div id="preview-area" class="preview-area" style="display: none;">
+            <img id="preview-img" alt="업로드 미리보기" />
+            <div class="preview-actions">
+              <button type="button" class="btn-secondary" id="remove-photo-btn">사진 제거</button>
+            </div>
+          </div>
+
+          <div class="guide-section" style="margin-top: 20px;">
+            <h5><i class="fa-solid fa-camera-retro"></i> 좋은 사진 촬영 가이드</h5>
+            <div class="swiper photo-guide-slider">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide slide-card">
+                  <img src="https://via.placeholder.com/600x280.png?text=Good+Example" alt="좋은 촬영 예시">
+                  <p>✔️ <b>좋은 예:</b> 상처 부위가 밝고 선명하게 보입니다.</p>
+                </div>
+                <div class="swiper-slide slide-card">
+                  <img src="https://via.placeholder.com/600x280.png?text=Bad+Example" alt="나쁜 촬영 예시">
+                  <p>❌ <b>나쁜 예:</b> 너무 어둡고 흔들려서 식별이 어렵습니다.</p>
+                </div>
+              </div>
+              <div class="swiper-button-next"></div>
+              <div class="swiper-button-prev"></div>
+            </div>
+          </div>
+
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn-secondary btn-prev" data-prev="1">이전</button>
+          <button type="button" class="btn-secondary btn-skip" data-next="3">건너뛰기</button>
+          <button type="button" class="btn-primary btn-next" data-next="3">다음</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step3" class="survey-step" style="display: none;">
+        <h2>출혈의 정도는 어떠한가요?</h2>
+        <form class="radio-group" id="form-step3">
+          <label><input type="radio" name="bleeding" value="none"><span>출혈 없음</span></label>
+          <label><input type="radio" name="bleeding" value="slight"><span>약간의 출혈 (자연 지혈 가능)</span></label>
+          <label><input type="radio" name="bleeding" value="continuous"><span>지속적인 출혈 (압박 필요)</span></label>
+          <label><input type="radio" name="bleeding" value="severe"><span>심한 출혈 (멈추지 않음)</span></label>
+          <label><input type="radio" name="bleeding" value="spurting"><span>분수처럼 솟는 출혈</span></label>
+        </form>
+        <div class="button-group">
+          <button type="button" class="btn-secondary btn-prev" data-prev="2">이전</button>
+          <button type="button" class="btn-primary btn-next" data-next="4">다음</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div id="step4" class="survey-step" style="display: none;">
+        <h2>통증과 움직임은 어떠한가요?</h2>
+        <form class="radio-group" id="form-step4">
+          <label><input type="radio" name="pain" value="mild"><span>가벼운 통증, 움직임 가능</span></label>
+          <label><input type="radio" name="pain" value="moderate"><span>보통 통증, 움직임 제한</span></label>
+          <label><input type="radio" name="pain" value="severe"><span>심한 통증, 움직임 불가</span></label>
+          <label><input type="radio" name="pain" value="unconscious"><span>의식 잃음</span></label>
+        </form>
+        <div class="button-group">
+          <button type="button" class="btn-secondary btn-prev" data-prev="3">이전</button>
+          <button type="button" class="btn-primary btn-next" data-next="5">다음</button>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div id="step5" class="survey-step" style="display: none;">
+        <h2>현재 상태를 확인해주세요</h2>
+        <form class="checkbox-group" id="form-step5">
+          <label><input type="checkbox" name="status" value="breathing_normal"><span>정상 호흡</span></label>
+          <label><input type="checkbox" name="status" value="breathing_fast"><span>빠른 호흡</span></label>
+          <label><input type="checkbox" name="status" value="breathing_difficulty"><span>호흡 곤란</span></label>
+          <label><input type="checkbox" name="status" value="pulse_normal"><span>정상 맥박</span></label>
+          <label><input type="checkbox" name="status" value="pulse_fast"><span>빠른 맥박</span></label>
+          <label><input type="checkbox" name="status" value="pulse_weak"><span>약한 맥박</span></label>
+          <label><input type="checkbox" name="status" value="nausea"><span>구토/메스꺼움</span></label>
+          <label><input type="checkbox" name="status" value="dizziness"><span>어지러움</span></label>
+          <label><input type="checkbox" name="status" value="consciousness_decreased"><span>의식 저하</span></label>
+        </form>
+        <div class="button-group">
+          <button type="button" class="btn-secondary btn-prev" data-prev="4">이전</button>
+          <button type="button" class="btn-primary btn-submit" id="btn-submit">응급도 평가</button>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="result" class="survey-step" style="display: none;">
+        <div class="result-card">
+          <div class="result-header">
+            <h3 id="resultTitle"></h3>
+            <span class="urgency-badge" id="urgencyBadge"></span>
+          </div>
+          <div class="risk-score">
+            <p>위험도 점수</p>
+            <div class="progress-bar-small">
+              <div class="progress-fill" id="riskProgress"></div>
+            </div>
+            <span id="riskScore"></span>
+          </div>
+          <p id="resultMessage"></p>
+        </div>
+
+        <div class="recommendation-section">
+          <h4>추천 진료과</h4>
+          <div id="recommendedDepartments"></div>
+        </div>
+
+        <div class="expected-disease">
+          <h4>예상 질환명</h4>
+          <div id="expectedDisease"></div>
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn-primary" id="btn-restart">다시 진단하기</button>
+          <button type="button" class="btn-secondary" id="btn-go-main">메인으로 돌아가기</button>
+        </div>
+      </div>
+
+    </main>
+
+    <aside class="emergency-guide-container">
+      <div id="guide-default">
+        <h4><span class="tip-icon">🚨</span> 즉시 119 신고가 필요한 경우</h4>
+        <ul><li>의식을 잃은 경우</li><li>심한 출혈이 멈추지 않는 경우</li><li>호흡곤란이 있는 경우</li><li>심한 골절이나 탈구가 의심되는 경우</li></ul>
+        <h4 style="margin-top: 20px;"><span class="tip-icon">🩹</span> 기본 응급처치 원칙</h4>
+        <ul><li>깨끗한 거즈나 천으로 출혈 부위 압박</li><li>화상 부위는 흐르는 찬물에 식히기</li><li>골절 의심 부위는 부목 등으로 고정</li></ul>
+        <h4 style="margin-top: 20px;"><span class="tip-icon">✅</span> 정확한 정보 전달</h4>
+        <p>119에 신고하거나 병원 방문 시, 언제, 어디서, 어떻게 다쳤는지 정확하게 설명하는 것이 중요합니다.</p>
+      </div>
+
+      <div id="guide-step2" style="display: none;">
+        <div class="guide-section info"><h5><i class="fa-solid fa-robot"></i> AI 사진 분석의 장점</h5><ul><li>외상의 크기와 깊이 정량적 측정</li><li>상처 종류의 자동 분류</li><li>감염 위험도 평가</li><li>맞춤형 응급처치 가이드 제공</li></ul></div>
+        <div class="guide-section aid"><h5><i class="fa-solid fa-notes-medical"></i> 분석 가능한 외상 유형</h5><ul><li>열상 (찢어진 상처), 자상 (찔린 상처)</li><li>타박상, 화상, 골절</li><li>찰과상 (긁힌 상처)</li></ul></div>
+      </div>
+
+      <div id="guide-result" style="display: none;">
+        <div class="guide-section urgent">
+          <h5><i class="fa-solid fa-triangle-exclamation"></i> 평가 결과를 확인하세요</h5>
+          <p>AI 평가는 의료적 진단을 대체할 수 없습니다. 위험도가 '위험' 이상이면 즉시 가까운 응급실을 방문하세요.</p>
+        </div>
+        <div class="guide-section info">
+          <h5><i class="fa-solid fa-circle-info"></i> 병원 방문 시 Tip</h5>
+          <ul>
+            <li>언제, 어디서, 어떻게 다쳤는지 설명</li>
+            <li>현재 복용 중인 약물 정보 전달</li>
+            <li>알레르기 유무 정보 전달</li>
+            <li>결과 페이지의 '추천 진료과' 참고</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="nearby-hospital-section">
+    <div class="nearby-hospital-header">
+      <h4>주변 응급 병원 찾기</h4>
+    </div>
+    <div id="map-container"></div>
+    <div class="hospital-grid" id="nearby-hospitals-list"></div>
+  </div>
+
+</div><!-- /.main-wrapper -->
+
+<!-- 페이지 전용 스크립트 (마지막에/또는 defer) -->
+<script th:src="@{/js/surgery.js}" defer></script>
+
+<!-- 푸터 프래그먼트 -->
+<div th:replace="~{main/mainPage::footer}"></div>
+</body>
+</html>
