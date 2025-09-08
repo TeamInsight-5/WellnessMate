@@ -22,7 +22,7 @@
 - Bootstrap / Custom CSS
 
 ### 🔹 Backend
-- Java 17  
+- JAVA JDK 17  
 - Spring Boot 3.4.5  
 - Gradle  
 - JPA (Hibernate)  
@@ -39,5 +39,3 @@
 👨‍💻 윤 빈 : DB 설계 · JPA 연동 · 서버 관리
 
 👩‍💻 고강민 : 문서화 · 보고서 작성 · 발표 자료
-
-👨‍💻 조준아 : 기능 구현 지원 · 테스트 · QA
