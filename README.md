@@ -47,6 +47,26 @@
 - Gradle Wrapper  
 - (선택) **FastAPI**: Python 3.10+ 기반 AI 서브서비스
 
+📦 의존성(Dependencies)
+✅ 필수 (현재 사용 중)
+
+Spring Boot 3.5.4
+
+Web / Thymeleaf / Security
+
+JPA(Hibernate) + MariaDB Driver
+
+WebFlux(일부 비동기 I/O)
+
+Redis(옵션 캐시/세션)
+
+Mail(알림/인증 메일)
+
+Thymeleaf Extras Spring Security
+
+Lombok
+
+JSON(org.json)
 ---
 
 ## 📁 디렉터리 구조
