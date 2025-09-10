@@ -364,6 +364,7 @@ input[type="checkbox"], input[type="radio"] {
     background-color: #4CAF50;
     color: white;
     border: none;
+
     transition: background-color 0.2s;
 }
 
