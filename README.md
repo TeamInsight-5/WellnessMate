@@ -47,7 +47,7 @@
 - Gradle Wrapper  
 - (선택) **FastAPI**: Python 3.10+ 기반 AI 서브서비스
 
-📦 의존성(Dependencies)
+## 📦 의존성(Dependencies)
 ✅ 필수 (현재 사용 중)
 
 Spring Boot 3.5.4
