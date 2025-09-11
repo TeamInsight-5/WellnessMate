@@ -1,0 +1,227 @@
+/* 전체 레이아웃 */
+body {
+    font-family: "Noto Sans KR", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    color: #333;
+}
+
+/* 헤더 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #007bff;
+}
+.nav {
+    display: flex;
+    gap: 15px;
+}
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+.login-area .btn-login {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Hero 영역 */
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+}
+.hero h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+.hero .highlight {
+    color: #007bff;
+}
+.hero p {
+    max-width: 600px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+}
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+.btn-primary {
+    background: #007bff;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+}
+.btn-secondary {
+    background: #f1f1f1;
+    color: #333;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+/* 서비스 영역 */
+.services {
+    padding: 60px 20px;
+    text-align: center;
+}
+.services h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+.services p {
+    color: #555;
+    margin-bottom: 40px;
+}
+.service-grid {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 30px;
+    width: 300px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: left;
+}
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+.card h3 {
+    margin: 10px 0;
+}
+.card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+.btn-card {
+    display: inline-block;
+    margin-top: 15px;
+    background: #007bff;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* ───────── 드롭다운 네비게이션 및 헤더 정렬 보강 ───────── */
+        .nav { position: relative; gap: 15px; display:flex; align-items:center; }
+        .nav .dropdown { position: relative; }
+        .nav .dropdown-toggle { text-decoration: none; color: #333; font-weight: 500; display: inline-block; padding: 4px 0; }
+        .nav .dropdown-menu {
+          position: absolute; top: 100%; left: 0;
+          display: none; min-width: 160px;
+          background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          padding: 8px; z-index: 50;
+        }
+        .nav .dropdown:hover .dropdown-menu,
+        .nav .dropdown:focus-within .dropdown-menu { display: block; }
+        .dropdown-link { display: block; padding: 10px 12px; border-radius: 6px; color: #333; text-decoration: none; font-size: 0.95rem; }
+        .dropdown-link:hover { background: #f5f8ff; color: #0b5bd3; }
+
+/* ───────── 메인 슬라이더 (퍼센트 기반 / 비율 안정) ───────── */
+        #main { width: 100% !important; }
+
+        /* 위 여백 */
+        #sliderType01 { margin-top: clamp(16px, 2.5vw, 32px); }
+
+        .main-slider__wrap {
+          width: 90%; max-width: 100%;
+          margin: 0 auto;
+        }
+        @media (max-width: 768px) { .main-slider__wrap { width: 95%; } }
+
+        /* 배경은 밝은 그라데이션, 고정 비율 16:9 */
+        .main-slider__img {
+          position: relative;
+          aspect-ratio: 16 / 6;
+          overflow: hidden;
+          border-radius: 12px;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+          background: linear-gradient(135deg, #eaf4ff, #f6f9ff);
+        }
+
+        .main-slider__inner {
+          display: flex;
+          transition: transform 0.5s ease;
+          will-change: transform;
+          height: 100%;
+        }
+        .main-slider__slide { flex: 0 0 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+        /* 이미지 확대/크롭 방지 → contain */
+        .main-slider__slide img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
+          background: transparent;
+        }
+
+        /* 1번 슬라이드: 이미지 + 오버레이 + 텍스트(배경이미지 대신 <img>) */
+        .hero-slide { position: relative; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
+        .hero-slide__img { position:absolute; inset:0; width:100%; height:100%; object-fit: contain; }
+        .hero-slide::before {
+          content:""; position:absolute; inset:0;
+          /* 가독성 위한 아주 은은한 블루 오버레이 */
+          background: linear-gradient(0deg, rgba(0, 90, 156, 0.25), rgba(0, 90, 156, 0.25));
+        }
+        .hero-slide__content { position: relative; z-index: 1; color: #fff; text-align: center; padding: 2% 4%; }
+        .hero-slide__title { font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 700; margin: 0 0 1rem 0; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+        .hero-slide__title .highlight { color: #66b3ff; }
+        .hero-slide__desc  { font-size: clamp(0.95rem, 1.6vw, 1.1rem); line-height: 1.6; max-width: 900px; margin: 0 auto; color: #f5fbff; }
+
+        /* ───────── 좌우 버튼: 각자 절대 위치(완전 대칭) ───────── */
+        .main-slider__btn {
+          position: absolute; top: 50%;
+          width: 44px; height: 44px;
+          transform: translateY(-50%);
+          background: rgba(0,0,0,0.45);
+          color: #fff; border: none; border-radius: 50%;
+          cursor: pointer; font-size: 20px; line-height: 44px;
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10;
+        }
+        .main-slider__btn:hover { background: rgba(0,0,0,0.55); }
+        .main-slider__btn--prev { left: 12px; }
+        .main-slider__btn--next { right: 12px; }
+
+        /* ───────── 닷 버튼 ───────── */
+        .main-slider__dot {
+          position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+          display: flex; gap: 0.5rem; z-index: 10;
+        }
+        .main-slider__dot .dot {
+          width: 10px; height: 10px; border-radius: 50%; background: #ddd; border: none; cursor: pointer;
+        }
+        .main-slider__dot .dot.active { background: #007bff; }
+
+/* 푸터 */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background: #f1f1f1;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+

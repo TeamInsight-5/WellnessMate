@@ -1,0 +1,290 @@
+/* =========================================
+   LifeCare - Mental Care (페이지 전용 CSS)
+   파일명: /css/mental-care.css
+========================================= */
+
+:root{
+  --primary:#2563eb;
+  --primary-hover:#1d4ed8;
+  --bg:#f7f8fb;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --ok:#22c55e;
+}
+
+/* 기본 바탕 */
+body{ background:var(--bg); color:var(--text); }
+
+/* ---------- Main wrapper ---------- */
+body.page--mental .main-wrapper{
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ---------- Page Header (아이콘 상단, 중앙정렬) ---------- */
+body.page--mental .page-header{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  color:#fff;
+  padding: 60px 40px;
+  border-radius: 15px;
+  margin: 8px 0 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,.08);
+  gap: 8px;
+}
+body.page--mental .page-header .header-icon{
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+body.page--mental .page-header h1{
+  margin: 6px 0 4px;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+body.page--mental .page-header p{
+  margin: 0;
+  font-size: 1rem;
+  opacity: .95;
+  max-width: 720px; /* 설명문 줄 길이 제한 */
+}
+
+/* ---------- Content 2열 ---------- */
+body.page--mental .content-container{
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+body.page--mental .survey-container{
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+body.page--mental .mental-chat-container{
+  flex: 0 0 320px;
+  width: 320px;
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+}
+@media (max-width:980px){
+  body.page--mental .content-container{ flex-direction: column; }
+  body.page--mental .mental-chat-container{ flex: 1 1 auto; width: 100%; position: static; }
+}
+
+/* ---------- Survey UI ---------- */
+.progress-bar-container{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.progress-bar{ flex:1; height:8px; background:#eef2ff; border-radius:999px; overflow:hidden; }
+.progress{ height:100%; background:var(--primary); width:0%; transition:width .25s ease; }
+.step-text, .progress-text{ color:var(--muted); font-size:.9rem; }
+.survey-step h2{ margin:10px 0 12px; }
+
+.mc-qbox{
+  border:1px dashed var(--border);
+  border-radius:10px;
+  background:#fbfdff;
+  padding:12px;
+  margin-bottom:10px;
+}
+.mc-options{ display:grid; gap:10px; }
+
+.button-group{
+  display:flex; gap:10px; justify-content:flex-end;
+  border-top:1px solid #f1f1f1; padding-top:12px; margin-top:12px;
+}
+
+/* 버튼 공통 */
+.btn-primary, .btn-secondary, .btn-ghost{
+  border-radius:8px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:600;
+  border:1px solid var(--border);
+}
+
+/* 기본 버튼 */
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
+.btn-primary:hover{ background:var(--primary-hover); }
+.btn-secondary{ background:#f8fafc; }
+.btn-secondary:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* 고스트 버튼 (기록 삭제) */
+.btn-ghost{
+  background:transparent;
+  border-color:transparent;
+  color:var(--muted);
+  padding:6px 10px;    /* 상단 헤더용 소형 */
+}
+.btn-ghost:hover{
+  background:#f3f4f6;
+  border-color:var(--border);
+  color:#374151;
+}
+
+/* ---------- Result Card ---------- */
+.result-card{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  margin-top:10px;
+}
+.result-header{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.urgency-badge{
+  background:var(--ok); color:#fff;
+  padding:4px 10px; border-radius:999px; font-size:.9rem;
+}
+.risk-score{ margin:10px 0; }
+.progress-bar-small{ height:8px; background:#eee; border-radius:999px; overflow:hidden; }
+.progress-fill{ height:100%; width:0%; background:var(--primary); transition:width .25s ease; }
+.mc-muted{ color:var(--muted); }
+
+.cesd-trend-card canvas { background:#fff; }
+
+.mc-chat-card__header{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  margin-bottom:8px;
+}
+.btn-ghost{
+  background:transparent; border:0; color:#6b7280; cursor:pointer;
+  padding:6px 10px; border-radius:8px; font-weight:600;
+}
+.btn-ghost:hover{ background:#f3f4f6; color:#111827; }
+/* ---------- Chat Card ---------- */
+.mc-chat-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+}
+
+/* 카드 헤더: 제목 왼쪽 / 기록삭제 버튼 오른쪽 */
+.mc-chat-card__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+
+.mc-card-title{
+  margin:0;            /* 헤더 안에서 위아래 여백 제거 */
+  font-size:18px;
+  font-weight:700;
+}
+
+/* 대화 영역 */
+.mc-chat__list{
+  height:360px;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* 말풍선(공통) */
+.chat-bubble{
+  max-width: 80%;
+  padding:10px 12px;
+  border-radius:12px;
+  line-height:1.5;
+  white-space: pre-wrap;    /* 줄바꿈 유지 */
+  word-break: keep-all;     /* 한글 단어 단위 줄바꿈 */
+}
+
+/* 위치/색상: 봇=왼쪽, 사용자=오른쪽 */
+.chat-bubble.bot{
+  margin-right:auto;
+  background:#f3f4f6;
+}
+.chat-bubble.user{
+  margin-left:auto;
+  background:#e8f0fe;
+  text-align:right;
+}
+
+/* 입력 라인 */
+.mc-chat__input{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+.mc-input{
+  flex:1;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  outline:none;
+}
+.mc-input:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+
+/* ---------- Map ---------- */
+.nearby-hospital-section{
+  margin-top:24px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+}
+#map-container{
+  width:100%;
+  height:320px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin-bottom:12px;
+  background:#eef2f7;
+}
+.hospital-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+@media (max-width:700px){ .hospital-grid{ grid-template-columns:1fr; } }
+
+/* ---------- typing 애니메이션 ---------- */
+.chat-bubble.typing {
+  display:flex; align-items:center; gap:4px; height:24px;
+}
+.chat-bubble.typing .dot {
+  width:6px; height:6px; background:#bbb; border-radius:50%;
+  animation: blink 1.2s infinite ease-in-out;
+}
+.chat-bubble.typing .dot:nth-child(2){ animation-delay:.2s; }
+.chat-bubble.typing .dot:nth-child(3){ animation-delay:.4s; }  /* ← 오타 수정됨 */
+
+@keyframes blink {
+  0%, 80%, 100% { transform: scale(1); opacity: 0.4; }
+  40% { transform: scale(1.3); opacity: 1; }
+}
+
+/* (선택) 스크롤바 미세 스타일 */
+.mc-chat__list::-webkit-scrollbar{ width:8px; }
+.mc-chat__list::-webkit-scrollbar-thumb{ background:#d1d5db; border-radius:8px; }
+.mc-chat__list::-webkit-scrollbar-track{ background:#f3f4f6; }
+
+#cesd-trend-canvas{
+  width: 100%;
+  height: 160px;       /* ← CSS 높이 고정 */
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>심리케어</title>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/footer.css}" />
+    <!-- 페이지 전용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/mental-care.css}" />
+
+    <!-- (선택) CSRF -->
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+
+    <!-- 로그인되어 있으면 유저아이디, 아니면 JS에서 guest-랜덤ID 생성 -->
+    <meta name="lc-user-id" th:content="${#authentication?.name}" />
+
+    <!-- Kakao 지도 SDK -->
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=48475be29fda82ad232749bbb6f73ea1&libraries=services"></script>
+
+    <!-- 페이지 전용 JS (지도가 있으면 여기서) -->
+    <script defer th:src="@{/js/mental-care.js}"></script>
+</head>
+
+<body class="page--mental">
+<!-- 헤더 프래그먼트 -->
+<div th:replace="~{main/mainPage:: header}"></div>
+
+<div class="main-wrapper">
+    <!-- 상단 헤더: 아이콘 위, 중앙 정렬 -->
+    <div class="page-header">
+        <div class="header-icon" aria-hidden="true">🧠</div>
+        <h1>심리케어</h1>
+        <p>AI 상담과 표준화된 자가진단으로 마음 건강을 살펴보세요</p>
+    </div>
+
+    <!-- 본문: 좌(설문) / 우(챗봇) -->
+    <div class="content-container">
+        <!-- 설문 -->
+        <main class="survey-container">
+            <div class="progress-bar-container">
+                <span class="progress-text">진행률</span>
+                <div class="progress-bar"><div class="progress" id="cesd-progress" style="width:5%;"></div></div>
+                <span class="step-text" id="cesd-step-text">1/20</span>
+            </div>
+
+            <section id="cesd-box" class="survey-step">
+                <h2>CES-D 우울증 자가진단</h2>
+
+                <div id="cesd-question" class="mc-qbox"></div>
+                <div id="cesd-options" class="mc-options"></div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-secondary" id="cesd-prev" disabled>이전</button>
+                    <button type="button" class="btn-primary" id="cesd-next">다음</button>
+                </div>
+
+                <div id="cesd-result" class="mc-result" style="display:none;">
+                    <!-- 최근 CES-D 추세 -->
+                    <div class="cesd-trend-card" id="cesd-trend-card" style="display:none; margin-top:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
+                            <h4 style="margin:0;font-size:16px;">최근 CES-D 추세</h4>
+                            <button id="cesd-trend-clear" class="btn-secondary" type="button" style="padding:6px 10px;">기록 비우기</button>
+                        </div>
+                        <!-- CSS 높이 기준으로 내부 버퍼/스케일을 세팅하므로 height 속성은 생략 -->
+                        <canvas id="cesd-trend-canvas" style="width:100%;height:160px;display:block;border:1px solid var(--border);border-radius:8px;background:#fff;"></canvas>
+                        <div id="cesd-trend-legend" class="mc-muted" style="margin-top:6px;font-size:13px;">
+                            <span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:2px;vertical-align:middle;margin-right:6px;"></span>정상(0–15)
+                            <span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:2px;vertical-align:middle;margin:0 6px 0 12px;"></span>주의(16–23)
+                            <span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px;vertical-align:middle;margin:0 6px 0 12px;"></span>고위험(24–60)
+                        </div>
+                    </div>
+
+                    <!-- 결과 카드 -->
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3 id="cesd-level-title">결과</h3>
+                            <span class="urgency-badge" id="cesd-badge">정상</span>
+                        </div>
+                        <div class="risk-score">
+                            <p>총점 (0–60)</p>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" id="cesd-scorebar" style="width:0%;"></div>
+                            </div>
+                            <span id="cesd-score-text">0 / 60</span>
+                        </div>
+                        <p id="cesd-desc" class="mc-muted"></p>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" id="cesd-reset">다시하기</button>
+                        <button type="button" class="btn-primary" id="cesd-save">결과 저장</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 챗봇 -->
+        <aside class="mental-chat-container">
+            <div class="mc-chat-card">
+                <div class="mc-chat-card__header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <h3 class="mc-card-title" style="margin:0;">AI 심리상담</h3>
+                    <button id="mc-chat-clear" class="btn-ghost" type="button" title="기록 삭제" style="border:none;background:transparent;cursor:pointer;">🗑️ 기록 삭제</button>
+                </div>
+
+                <div id="mc-chat-list" class="mc-chat__list"></div>
+
+                <div class="mc-chat__input">
+                    <input
+                            id="mc-chat-input"
+                            class="mc-input"
+                            type="text"
+                            placeholder="지금 마음 상태를 편하게 적어보세요. 예) 요즘 잠이 잘 안 와요"
+                    />
+                    <button id="mc-chat-send" class="btn-primary" type="button">보내기</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 하단: 주변 병원 -->
+    <div class="nearby-hospital-section">
+        <div class="nearby-hospital-header">
+            <h4>주변 정신건강의학과</h4>
+        </div>
+        <div id="map-container"></div>
+        <div class="hospital-grid" id="nearby-hospitals-list"></div>
+    </div>
+</div>
+
+<!-- 푸터 프래그먼트 -->
+<div th:replace="~{main/mainPage:: footer}"></div>
+
+<!-- 서버가 Thymeleaf로 내려줄 수 있으면 문자열, 아니면 null -->
+<script th:inline="javascript">
+    window.lcUserId = /*[[${#authentication?.name}]]*/ null;
+</script>
+
+<!-- ===== 챗봇(로컬 저장/복원) ===== -->
+<script>
+    (function () {
+      if (window.__mcChatInit) return;
+      window.__mcChatInit = true;
+
+      // 서버에서 JS 변수 못 내렸을 때 메타태그로 보완
+      if (!window.lcUserId) {
+        const metaId = document.querySelector('meta[name="lc-user-id"]')?.content;
+        if (metaId && metaId.trim()) window.lcUserId = metaId.trim();
+      }
+
+      // 사용자 ID 결정(로그인 아이디 우선, 없으면 게스트 고정)
+      const resolvedUserId = (function() {
+        if (window.lcUserId && typeof window.lcUserId === 'string' && window.lcUserId.trim()) {
+          localStorage.setItem('lc_user_id', window.lcUserId);
+          return window.lcUserId;
+        }
+        const existing = localStorage.getItem('lc_user_id');
+        if (existing) return existing;
+        const guest = 'guest_' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('lc_user_id', guest);
+        return guest;
+      })();
+
+      const STORAGE_KEY = `mc_chat_logs:${resolvedUserId}`;
+
+      // DOM
+      const chatList = document.getElementById("mc-chat-list");
+      const input = document.getElementById("mc-chat-input");
+      const sendBtn = document.getElementById("mc-chat-send");
+      const clearBtn = document.getElementById("mc-chat-clear");
+
+      // 상태
+      let history = [];
+
+      // 렌더 유틸
+      function renderBubble({ role, text }) {
+        const div = document.createElement("div");
+        div.className = "chat-bubble " + (role === "user" ? "user" : "bot");
+        div.textContent = text;
+        chatList.appendChild(div);
+        chatList.scrollTop = chatList.scrollHeight;
+      }
+
+      function saveHistory() {
+        if (history.length > 200) history = history.slice(-200);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+      }
+
+      function appendAndPersist(role, text) {
+        const entry = { role, text, ts: Date.now() };
+        history.push(entry);
+        saveHistory();
+        renderBubble(entry);
+      }
+
+      function loadHistory() {
+        chatList.innerHTML = "";
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const welcome = "안녕하세요! 저는 LifeCare AI 심리상담사입니다. 😊\n지금 마음 상태를 편하게 적어주세요.";
+          history = [{ role: "bot", text: welcome, ts: Date.now() }];
+          saveHistory();
+          renderBubble(history[0]);
+          return;
+        }
+        try {
+          history = JSON.parse(raw) || [];
+          history.forEach(renderBubble);
+        } catch (e) {
+          console.warn("채팅 기록 파싱 실패. 초기화합니다.", e);
+          localStorage.removeItem(STORAGE_KEY);
+          history = [];
+          loadHistory();
+        }
+      }
+
+      // 타이핑 표시
+      function showTyping() {
+        const typing = document.createElement("div");
+        typing.className = "chat-bubble bot typing";
+        typing.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+        chatList.appendChild(typing);
+        chatList.scrollTop = chatList.scrollHeight;
+        return typing;
+      }
+      function hideTyping(el) { if (el && el.parentNode) el.remove(); }
+
+      // 전송
+      async function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
+
+        appendAndPersist("user", message);
+        input.value = "";
+
+        const typingEl = showTyping();
+        try {
+          const res = await fetch("http://localhost:8000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_message: message })
+          });
+          const data = await res.json();
+          hideTyping(typingEl);
+
+          const reply = (data && data.reply) ? String(data.reply) : "죄송합니다. 응답을 불러오지 못했어요.";
+          appendAndPersist("bot", reply);
+        } catch (err) {
+          hideTyping(typingEl);
+          appendAndPersist("bot", "⚠️ 오류가 발생했습니다. 다시 시도해주세요.");
+          console.error(err);
+        }
+      }
+
+      // 이벤트(중복 방지 플래그)
+      if (!sendBtn.dataset.bound) {
+        sendBtn.addEventListener("click", sendMessage);
+        sendBtn.dataset.bound = "1";
+      }
+      if (!input.dataset.bound) {
+        input.addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); });
+        input.dataset.bound = "1";
+      }
+      if (clearBtn && !clearBtn.dataset.bound) {
+        clearBtn.addEventListener("click", () => {
+          if (!confirm("현재 채팅 기록을 삭제할까요?")) return;
+          localStorage.removeItem(STORAGE_KEY);
+          history = [];
+          chatList.innerHTML = "";
+          loadHistory();
+        });
+        clearBtn.dataset.bound = "1";
+      }
+
+      // 초기 렌더
+      loadHistory();
+    })();
+</script>
+
+<!-- ===== CES-D 점수 저장 & 추세 표시(로컬 보관) ===== -->
+<script>
+    (function(){
+      // 사용자 ID 해석(로그인 > 저장된 guest > 새 guest)
+      function resolveUserId(){
+        try {
+          if (window.lcUserId && String(window.lcUserId).trim()) {
+            localStorage.setItem('lc_user_id', window.lcUserId);
+            return String(window.lcUserId).trim();
+          }
+        } catch(e){}
+        const ex = localStorage.getItem('lc_user_id');
+        if (ex) return ex;
+        const guest = 'guest_' + Math.random().toString(36).slice(2,10);
+        localStorage.setItem('lc_user_id', guest);
+        return guest;
+      }
+      const USER_ID = resolveUserId();
+      const STORAGE_KEY = `cesdScores:${USER_ID}`;   // 사용자별 분리
+
+      const $canvas    = document.getElementById('cesd-trend-canvas');
+      const $card      = document.getElementById('cesd-trend-card');
+      const $btnClear  = document.getElementById('cesd-trend-clear');
+      const $saveBtn   = document.getElementById('cesd-save');
+      const $scoreText = document.getElementById('cesd-score-text');
+
+      // 점수 목록 로드/세이브
+      function loadScores(){
+        try {
+          const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          return Array.isArray(arr) ? arr : [];
+        } catch { return []; }
+      }
+      function saveScores(arr){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      }
+
+      // 점수 저장: {ts, score}
+      function addScore(score){
+        const list = loadScores();
+        list.push({ ts: Date.now(), score: Number(score) || 0 });
+        // 최근 12개만 보관
+        const trimmed = list.slice(-12);
+        saveScores(trimmed);
+        return trimmed;
+      }
+
+      // 리사이즈 대응: CSS 높이를 기준으로 내부 버퍼/좌표계를 세팅
+      function fitCanvas() {
+        if (!$canvas) return;
+        const scale = window.devicePixelRatio || 1;
+
+        // CSS 크기(보이는 크기) 가져오기
+        const rect = $canvas.getBoundingClientRect();
+        const cssH = parseFloat(getComputedStyle($canvas).height) || rect.height || 160;
+
+        // 내부 버퍼 사이즈 설정 (픽셀 단위)
+        $canvas.width  = Math.max(300, Math.floor(rect.width  * scale));
+        $canvas.height = Math.max(120, Math.floor(cssH       * scale));
+
+        // 그리기 좌표계를 CSS px 기준으로 맞춤
+        const ctx = $canvas.getContext('2d');
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      }
+
+      // 차트 렌더 (막대그래프)
+      function render() {
+        if (!$canvas || !$card) return;
+
+        const data = loadScores();
+        if (!data.length) {
+          $card.style.display = 'none';
+          return;
+        }
+        $card.style.display = 'block';
+
+        // 먼저 사이징
+        fitCanvas();
+
+        // 레이아웃이 아직 안 잡혔다면 다음 프레임에 재시도
+        const rect = $canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) {
+          requestAnimationFrame(render);
+          return;
+        }
+
+        const ctx = $canvas.getContext('2d');
+
+        // 내부 버퍼는 device px, 우리는 CSS px 좌표계로 그리므로 scale로 나눠서 사용
+        const scale = window.devicePixelRatio || 1;
+        const w = $canvas.width  / scale;
+        const h = $canvas.height / scale;
+
+        // 배경 클리어
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, w, h);
+
+        // 가이드라인(0,16,24,60)
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 1;
+        [0,16,24,60].forEach(v=>{
+          const y = h - (v/60)*h;
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+          ctx.fillStyle = '#9ca3af';
+          ctx.font = '12px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(String(v), 4, Math.min(h-2, y-2));
+        });
+
+        // 막대 너비/간격 계산
+        const N = data.length;
+        const margin = 12;
+        const usable = Math.max(0, w - margin*2);
+        const bw  = Math.max(10, Math.floor((usable / Math.max(N,1)) * 0.6)); // bar width
+        const gap = Math.max(6, Math.floor((usable - bw*N) / Math.max(N-1,1))); // gap
+
+        // 바 그리기
+        let x = margin;
+        data.forEach(d => {
+          const s  = Math.max(0, Math.min(60, Number(d.score)||0));
+          const bh = (s/60) * h;
+          const y  = h - bh;
+
+          let color = '#22c55e';
+          if (s>=16 && s<=23) color = '#f59e0b';
+          if (s>=24)          color = '#ef4444';
+
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, bw, bh);
+
+          if (N <= 12) {
+            ctx.fillStyle = '#334155';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(String(s), x + bw/2, y - 4);
+          }
+          x += bw + gap;
+        });
+      }
+
+      // 점수 저장 버튼
+      function onSaveClick(){
+        if (!$scoreText) { alert('점수 엘리먼트를 찾을 수 없어요 (#cesd-score-text).'); return; }
+        const m = String($scoreText.textContent||'').match(/(\d+)\s*\/\s*60/);
+        const score = m ? Number(m[1]) : NaN;
+        if (!Number.isFinite(score)) {
+          alert('점수를 읽을 수 없어요. 결과가 먼저 계산/표시된 후 저장해주세요.');
+          return;
+        }
+        addScore(score);
+        render();
+        try {
+          $saveBtn.disabled = true;
+          $saveBtn.textContent = '저장됨';
+          setTimeout(()=>{ $saveBtn.disabled=false; $saveBtn.textContent='결과 저장'; }, 1200);
+        } catch {}
+        if ($card) $card.style.display = 'block';
+      }
+
+      // 기록 비우기 버튼
+      function onClearClick(){
+        if (!confirm('저장된 CES-D 기록을 모두 삭제할까요?')) return;
+        saveScores([]);
+        render();
+      }
+
+      // 초기 렌더 + 이벤트
+      window.addEventListener('resize', render);
+      if ($btnClear) $btnClear.addEventListener('click', onClearClick);
+      if ($saveBtn)  $saveBtn.addEventListener('click', onSaveClick);
+
+      // 페이지 진입 시 기존 기록 표시
+      render();
+
+      // 외부에서 직접 저장하고 싶을 때 사용 가능 (옵션)
+      window.CesdTrend = {
+        save: function(score){ addScore(score); render(); },
+        render
+      };
+    })();
+</script>
+</body>
+</html>
