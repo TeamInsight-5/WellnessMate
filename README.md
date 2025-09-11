@@ -7,7 +7,7 @@
 
 ## 🎥 데모 & 자료
 - ▶️ **데모 영상**: [영상 보러가기](https://youtu.be/haJJG0AC8Zo)  <!-- TODO: 실제 URL로 교체 -->
-- 📄 **프로젝트 보고서(PDF)**: [다운로드](docs/report.pdf)         <!-- TODO: docs/report.pdf 업로드 -->
+- 📄 **프로젝트 보고서(PDF)**: [다운로드](C:\Users\human-21\Downloads\5팀 WellnessMate 프로젝트 (1).pdf)         <!-- TODO: docs/report.pdf 업로드 -->
 - 🖼️ **스크린샷**
   <div align="center">
     <img src="assets/screenshots/01-home.png" alt="홈 화면" width="45%"/>
